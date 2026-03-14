@@ -1,31 +1,27 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:marketplace_app/core/routing/app_router.dart';
-import 'firebase_options.dart';
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await  Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-);
+import 'Screens/register.dart'; // استيراد ملف الشاشة
 
-  runApp(const MyApp());
+void main() {
+  runApp(const StudentMarketplaceApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class StudentMarketplaceApp extends StatelessWidget {
+  const StudentMarketplaceApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Marketplace App',
+      title: 'Student Marketplace',
+      debugShowCheckedModeBanner: false, // لإخفاء شريط الـ Debug المزعج
+      // إعدادات الثيم العام (Dark Mode) ليتماشى مع تصميمك
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+        primaryColor: const Color(0xFF2D82FF),
+        scaffoldBackgroundColor: const Color(0xFF0F1117),
+        fontFamily: 'Poppins', // إذا كنت ستستخدم خطاً مخصصاً لاحقاً
       ),
-      initialRoute: AppRouter.splash,
-      onGenerateRoute: AppRouter.generateRoute,
+
+      home: const SignUpScreen(), // نقطة البداية هي شاشة التسجيل
     );
   }
 }
-
-
