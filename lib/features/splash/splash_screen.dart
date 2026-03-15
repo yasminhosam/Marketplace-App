@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     }
     if (mounted) {
-      Navigator.pushReplacementNamed(context, AppRouter.login);
+      Navigator.pushReplacementNamed(context, AppRouter.onboarding);
     }
   }
 
@@ -140,4 +140,6 @@ class _SplashScreenState extends State<SplashScreen> {
       ],
     );
   }
+
+
 }
