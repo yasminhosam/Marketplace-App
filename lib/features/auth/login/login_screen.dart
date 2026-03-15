@@ -185,10 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(
-                      context,
-                      AppRouter.onboarding,
-                    );
+
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A90E2),
