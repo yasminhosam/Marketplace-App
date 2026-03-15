@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace_app/features/auth/login/login_screen.dart';
 import 'package:marketplace_app/features/splash/splash_screen.dart';
-
 import 'package:marketplace_app/features/onboarding/onboarding_screen.dart';
 import 'package:marketplace_app/features/auth/register/register_screen.dart';
 
