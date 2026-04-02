@@ -1,5 +1,6 @@
+import 'dart:developer';
 import 'package:marketplace_app/core/services/auth_service.dart';
-
+import '../../../core/models/user_model.dart';
 import 'auth_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,112 +9,109 @@ class AuthCubit extends Cubit<AuthState> {
 
   AuthCubit(this._authService) : super(AuthInitial());
 
-  void checkAuthStatus()async{
-    final user = _authService.currentUser;
-    if(user== null){
-      emit(AuthUnAuthenticated());
-    }else{
-      await user.reload();
-      if(user.emailVerified){
-        _fetchUserRole(user.uid);
-      }else{
-        emit(AuthEmailNotVerified());
-      }
+  void _emitAuthenticated(UserModel user) {
+    if (user.role == 'vendor') {
+      emit(AuthenticatedVendor(user));
+    } else {
+      emit(AuthenticatedClient(user));
     }
   }
 
-  void _fetchUserRole(String uid) async {
-    emit(AuthLoading());
-    try {
-      String? role = await _authService.getUserRole(uid);
-      if (role == 'vendor')
-        emit(AuthenticatedVendor());
-      else
-        emit(AuthenticatedClient());
-    } catch (e) {
-      emit(AuthError("Failed to fetch role"));
-    }
-  }
-  void checkEmailVerified() async {
-    final user = _authService.currentUser;
-    if (user == null) {
+  void checkAuthStatus() async {
+    final firebaseUser = _authService.currentUser;
+
+    if (firebaseUser == null) {
       emit(AuthUnAuthenticated());
       return;
     }
-    await user.reload();
-    if (user.emailVerified) {
-       _fetchUserRole(user.uid);
-    } else {
+    try{
+    await firebaseUser.reload();
+
+    if (!firebaseUser.emailVerified) {
       emit(AuthEmailNotVerified());
+      return;
+    }
+    emit(AuthLoading());
+
+      final user = await _authService.getUser(firebaseUser.uid);
+      if (user == null) {
+        emit(AuthUnAuthenticated());
+      } else {
+        _emitAuthenticated(user);
+      }
+    } catch (e) {
+      emit(AuthError("Failed to load user data."));
+      log("Auth status check failed: $e", name: "AuthCubit");
     }
   }
-
-  void login({required String email, required String password}) async {
+  Future<void> login({required String email, required String password}) async {
     emit(AuthLoading());
 
     try {
       final user = await _authService.signIn(email: email, password: password);
 
       if (user == null) {
-        emit(AuthError("Invalid email or password"));
-        return;
-      }
-
-      await user.reload(); // If this throws an error, the catch block catches it
-
-      if (!user.emailVerified) {
         emit(AuthEmailNotVerified());
         return;
       }
 
-      _fetchUserRole(user.uid);
-
+      _emitAuthenticated(user);
     } catch (e) {
       //  If anything crashes, stop the spinner and show the error.
       emit(AuthError("Login failed. Please try again. "));
+      log("Login failed $e",name: "AuthCubit");
     }
   }
 
-  void register({
+  Future<void> register({
     required String username,
     required String email,
     required String password,
-    required String role
-})async {
+    required String role,
+    String? storeName,
+    String? storeDescription,
+  }) async {
     emit(AuthLoading());
     try {
       final user = await _authService.register(
+        userName: username,
         email: email,
         password: password,
         role: role,
+        storeName: storeName,
+        storeDescription: storeDescription
       );
 
       if (user == null) {
         emit(AuthError("Registration failed. Please try again."));
+        log("user is null",name: "AuthCubit");
         return;
       }
 
-      await _authService.updateUsername(username: username);
+
       emit(AuthEmailNotVerified());
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError("Registration failed. Please try again."));
+     log("Register failed $e",name: "AuthCubit");
     }
-    }
-  void resetPassword({required String email}) async {
+  }
+
+  Future<void> resetPassword({required String email}) async {
     emit(AuthLoading());
     try {
       await _authService.resetPassword(email: email);
       emit(AuthPasswordResetSent());
+    } on Exception catch (e) {
+      emit(AuthError(e.toString().replaceFirst('Exception: ', '')));
     } catch (e) {
       emit(AuthError("Failed to send reset email. Please try again."));
+      log("Rest password failed $e",name: "AuthCubit");
     }
   }
 
-
-    void logout() async{
-      emit(AuthLoading());
+  Future<void> logout() async {
+    emit(AuthLoading());
     await _authService.signOut();
     emit(AuthUnAuthenticated());
-    }
   }
-
+}

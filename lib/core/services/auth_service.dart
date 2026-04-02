@@ -1,109 +1,109 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:marketplace_app/core/models/user_model.dart';
 
 class AuthService {
-  // singleton instance
-  final FirebaseAuth firebaseAuth=FirebaseAuth.instance;
+  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  User? get currentUser => firebaseAuth.currentUser;  
-   
+
+  User? get currentUser => firebaseAuth.currentUser;
   Stream<User?> get authStateChanges => firebaseAuth.authStateChanges();
 
-  Future<User?> signIn({
+  Future<UserModel?> signIn({
     required String email,
     required String password,
-  })async{
-    try{
-      UserCredential userCredential =
-      await firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-      User? user = userCredential.user;
-      if(user !=null && !user.emailVerified){
-        await user.sendEmailVerification();
-       
-      }
-      return user;
-    }on FirebaseAuthException catch (e){
-      print(e.message);
-      return null;
-    }
-  }
-  
-
-
-  Future<User?> register({
-    required String email,
-    required String password,
-    required String role
-  }) async{
-
-      UserCredential userCredential = await firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-
-    User? user = userCredential.user;
-    if(user !=null){
-      await firestore.collection("users").doc(user.uid).set({
-        "email":email,
-        "role":role
-      });
-
-      if(!user.emailVerified){
-      await user.sendEmailVerification();
-    }
-    }
-    
-    return user;
-    
-  }
-  Future<void> checkEmailVerified() async {
-
-  User? user = FirebaseAuth.instance.currentUser;
-  if(user==null) return;
-
-  await user.reload();
-  if (user.emailVerified) {
-    print("Email verified");
-  } else {
-    print("Email not verified");
-  }
-
-}
-
-  Future<void> signOut() async{
-    try{
-      await firebaseAuth.signOut();
-    } on FirebaseAuthException catch (e){
-      print(e.message);
-    }
-  }
-
-  Future<void> resetPassword({
-    required String email
-  }) async{
-    try{
-      await firebaseAuth.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e){
-      print(e.message);
-      
-    }
-  }
-
-  Future<void> updateUsername({
-    required String username
-  }) async{
+  }) async {
     try {
-      await currentUser!.updateDisplayName(username );
-    } on FirebaseAuthException catch (e){
-      print(e.message);
-      
+      UserCredential userCredential = await firebaseAuth
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      User? user = userCredential.user;
+      if (user == null) return null;
+
+      if (!user.emailVerified) {
+        await user.sendEmailVerification();
+        return null; // cubit will emit AuthEmailNotVerified
+      }
+
+      return await getUser(user.uid);
+    } on FirebaseAuthException catch (e) {
+      throw Exception(e.message);
     }
   }
 
-  Future<String?> getUserRole(String uid) async{
-    DocumentSnapshot doc= await firestore.collection("users").doc(uid).get();
+  Future<UserModel?> register({
+    required String userName,
+    required String email,
+    required String password,
+    required String role,
+    String? storeName,
+    String? storeDescription,
+  }) async {
+    try {
+      UserCredential userCredential = await firebaseAuth
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-    return doc["role"];
+      User? user = userCredential.user;
+      if (user == null) return null;
+
+
+      await user.updateDisplayName(userName);
+
+
+      UserModel newUser = UserModel(
+        uid: user.uid,
+        name: userName,
+        email: email,
+        role: role,
+        storeName: role == 'vendor' ? storeName : null,
+        storeDescription: role == 'vendor' ? storeDescription : null,
+      );
+
+
+      await firestore.collection("users").doc(user.uid).set(newUser.toMap());
+
+      // Send verification email
+      await user.sendEmailVerification();
+
+      return newUser;
+    } on FirebaseAuthException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception("Registration failed. Please try again.");
+    }
   }
 
 
+  Future<UserModel?> getUser(String uid) async {
+    try {
+      DocumentSnapshot doc =
+      await firestore.collection("users").doc(uid).get();
+      if (!doc.exists) return null;
+      return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+    } catch (e) {
+      throw Exception("Failed to fetch user data.");
+    }
+  }
 
-}  
+
+  Future<bool> checkEmailVerified() async {
+    User? user = firebaseAuth.currentUser;
+    if (user == null) return false;
+    await user.reload();
+    return firebaseAuth.currentUser?.emailVerified ?? false;
+  }
+
+
+  Future<void> signOut() async {
+    await firebaseAuth.signOut();
+  }
+
+
+  Future<void> resetPassword({required String email}) async {
+    try {
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw Exception(e.message);
+    }
+  }
+}

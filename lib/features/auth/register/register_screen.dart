@@ -19,6 +19,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  final TextEditingController _storeNameController=TextEditingController();
+  final TextEditingController _storeDescController=TextEditingController();
   final Color backgroundColor = const Color(0xFF0F1117);
   final Color inputFillColor = const Color(0xFF1B1E26);
   final Color primaryBlue = const Color(0xFF2D82FF);
@@ -29,6 +31,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _storeNameController.dispose();
+    _storeDescController.dispose();
     super.dispose();
   }
 
@@ -124,15 +128,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 20),
 
                   if (!isClient) ...[
-                    _buildLabel("Business Type"),
+                    _buildLabel("Store Name"),
                     _buildTextField(
-                        hint: "Graphic Design, Tutoring, etc.",
-                        icon: Icons.work_outline),
+                        hint: "",
+                        icon: Icons.work_outline,
+                        controller: _storeNameController
+                    ),
+
                     const SizedBox(height: 20),
-                    _buildLabel("Short Bio / Experience"),
+                    _buildLabel("Short Bio / Description"),
                     _buildTextField(
                         hint: "Briefly describe what you offer...",
                         icon: Icons.description_outlined,
+                        controller: _storeDescController,
                         maxLength: 200),
                     const SizedBox(height: 20),
                   ],
@@ -168,6 +176,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           email: _emailController.text.trim(),
                           password: _passwordController.text.trim(),
                           role: isClient ? 'client' : 'vendor',
+                          storeName:  _storeNameController.text.trim(),
+                          storeDescription: _storeDescController.text.trim()
                         );
                       },
                       style: ElevatedButton.styleFrom(
