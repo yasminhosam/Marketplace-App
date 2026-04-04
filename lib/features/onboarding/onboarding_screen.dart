@@ -36,25 +36,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              
-              
               Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()),
                     );
                   },
                   child: const Text(
                     'Skip',
-                    style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
 
-              
               Expanded(
                 child: PageView(
                   controller: _controller,
@@ -71,18 +72,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Image.asset('assets/images/img1.png', height: 280),
                         const SizedBox(height: 40),
                         const Text(
-                          'Discover Vendors', 
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                          'Discover Vendors',
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87),
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'Explore stores from\ndifferent sellers.', 
-                          style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.5), 
+                          'Explore stores from\ndifferent sellers.',
+                          style: TextStyle(
+                              fontSize: 16, color: Colors.grey, height: 1.5),
                           textAlign: TextAlign.center,
                         ),
                       ],
                     ),
-                    
+
                     // page two
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -91,17 +96,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         const SizedBox(height: 40),
                         const Text(
                           'Shop Products Easily',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87),
                         ),
                         const SizedBox(height: 16),
                         const Text(
                           'Browse categories and \nfind products quickly',
-                          style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.5),
+                          style: TextStyle(
+                              fontSize: 16, color: Colors.grey, height: 1.5),
                           textAlign: TextAlign.center,
                         )
                       ],
                     ),
-                    
+
                     // page three
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -110,12 +119,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         const SizedBox(height: 40),
                         const Text(
                           'Start Your Store',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87),
                         ),
                         const SizedBox(height: 16),
                         const Text(
                           'Create your own store and \nmanage your products',
-                          style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.5),
+                          style: TextStyle(
+                              fontSize: 16, color: Colors.grey, height: 1.5),
                           textAlign: TextAlign.center,
                         )
                       ],
@@ -124,7 +137,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
 
-              
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -135,7 +147,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     height: 8,
                     width: currentIndex == index ? 24 : 8,
                     decoration: BoxDecoration(
-                      color: currentIndex == index ? const Color(0xFF4A72D4) : Colors.grey.shade300,
+                      color: currentIndex == index
+                          ? const Color(0xFF4A72D4)
+                          : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -152,7 +166,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     if (currentIndex == 2) {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const LoginScreen()),
                       );
                     } else {
                       _controller.nextPage(
@@ -164,11 +179,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A72D4),
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
                     currentIndex == 2 ? 'GET STARTED' : 'NEXT',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 1.2),
                   ),
                 ),
               ),
@@ -180,7 +200,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
-
 
 // (Login Screen)
 class LoginScreen extends StatelessWidget {
