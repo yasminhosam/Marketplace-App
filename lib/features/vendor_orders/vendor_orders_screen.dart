@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:marketplace_app/core/models/order_model.dart';
 import 'package:marketplace_app/features/vendor_orders/cubit/vendor_orders_cubit.dart';
 import 'package:marketplace_app/features/vendor_orders/cubit/vendor_orders_state.dart';
 import 'package:marketplace_app/features/vendor_orders/order_card.dart';
@@ -18,12 +17,10 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // بنغلف الشاشة بـ BlocProvider عشان نوفر الـ Cubit ليها
     return BlocProvider(
       create: (context) => VendorOrdersCubit()
-        ..fetchVendorOrders(
-          "As4ve9MN86ar6jYgLEb5eeg3OPS2",
-        ), // ID البائع من الفايربيز بتاعك
+        // TODO: Replace this hardcoded ID with the actual dynamic vendorId from AuthCubit when integrating
+        ..fetchVendorOrders("As4ve9MN86ar6jYgLEb5eeg3OPS2"),
       child: Scaffold(
         backgroundColor: const Color(0xFF0D1117),
         appBar: AppBar(
@@ -41,7 +38,6 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
         ),
         body: Column(
           children: [
-            // 1. شريط التابات (الفلتر)
             Container(
               height: 50,
               decoration: const BoxDecoration(
@@ -86,8 +82,6 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                 },
               ),
             ),
-
-            // 2. محتوى الشاشة بناءً على حالة الـ Cubit
             Expanded(
               child: BlocBuilder<VendorOrdersCubit, VendorOrdersState>(
                 builder: (context, state) {
@@ -105,7 +99,6 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                       ),
                     );
                   } else if (state is VendorOrdersLoaded) {
-                    // منطق الفلترة
                     final filteredOrders = _selectedTab == 'All'
                         ? state.orders
                         : state.orders
@@ -139,14 +132,12 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
             ),
           ],
         ),
-
-        // 3. شريط التنقل السفلي (Bottom Navigation Bar)
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: const Color(0xFF0D1117),
           type: BottomNavigationBarType.fixed,
           selectedItemColor: const Color(0xFF4A90E2),
           unselectedItemColor: const Color(0xFF8B9CB6),
-          currentIndex: 2, // Orders Tab
+          currentIndex: 2,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),

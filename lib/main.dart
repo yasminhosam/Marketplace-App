@@ -6,9 +6,6 @@ import 'package:marketplace_app/core/services/auth_service.dart';
 import 'package:marketplace_app/features/auth/cubit/auth_cubit.dart';
 import 'firebase_options.dart';
 
-// (تعديل 1 مؤقت): عملنا import للشاشة بتاعتك عشان نعرف نفتحها
-import 'package:marketplace_app/features/vendor_orders/vendor_orders_screen.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -30,20 +27,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Marketplace App',
       debugShowCheckedModeBanner: false,
-
       theme: ThemeData(
         brightness: Brightness.dark,
         primaryColor: const Color(0xFF2D82FF),
         scaffoldBackgroundColor: const Color(0xFF0F1117),
         fontFamily: 'Poppins',
       ),
-
-      // (تعديل 2 مؤقت): وقفنا الـ Routes بتاعة زمايلك عشان نتخطى الـ Splash
-      // initialRoute: AppRouter.splash,
-      // onGenerateRoute: AppRouter.generateRoute,
-
-      // (تعديل 3 مؤقت): خلينا نقطة البداية هي شاشتك إنتي علطول
-      home: const VendorOrdersScreen(),
+      initialRoute: AppRouter.splash,
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }

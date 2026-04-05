@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-// استوردنا الموديل الحقيقي
 import 'package:marketplace_app/core/models/order_model.dart';
 
 class OrderCard extends StatelessWidget {
-  final OrderModel order; // غيرناها للموديل الحقيقي
+  final OrderModel order;
 
   const OrderCard({super.key, required this.order});
 
@@ -22,7 +21,6 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // تحويل التاريخ من DateTime لشكل مقروء8
     final dateString =
         "${order.orderDate.day}/${order.orderDate.month}/${order.orderDate.year}";
 
@@ -40,7 +38,7 @@ class OrderCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '#${order.id.substring(0, 6)}', // بناخد أول 6 حروف من الـ ID بتاع الفايربيز
+                '#${order.id.substring(0, 6)}',
                 style: const TextStyle(
                   color: Color(0xFF4A90E2),
                   fontWeight: FontWeight.bold,
@@ -77,7 +75,7 @@ class OrderCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                order.clientName, // من الموديل الحقيقي
+                order.clientName,
                 style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
             ],
@@ -92,7 +90,7 @@ class OrderCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                dateString, // التاريخ بعد التحويل
+                dateString,
                 style: const TextStyle(color: Color(0xFF8B9CB6), fontSize: 13),
               ),
             ],
@@ -105,7 +103,7 @@ class OrderCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '\$${order.totalAmount.toStringAsFixed(2)}', // السعر من الموديل الحقيقي
+                '\$${order.totalAmount.toStringAsFixed(2)}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
