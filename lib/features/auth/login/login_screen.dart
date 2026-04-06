@@ -71,12 +71,11 @@ class _LoginScreenState extends State<LoginScreen> {
               'Please verify your email before logging in.',
               color: Colors.orange,
             );
-          } else if(state is AuthenticatedClient ||state is AuthenticatedVendor ){
-            _showSnackBar(
-              'Login Successfully',
-              color: Colors.green,
-            );
-
+          } else if (state is AuthenticatedClient) {
+            _showSnackBar('Login Successfully', color: Colors.green);
+          } else if (state is AuthenticatedVendor) {
+            _showSnackBar('Welcome to Seller Hub', color: Colors.green);
+            Navigator.pushReplacementNamed(context, AppRouter.vendorHome);
           }
         },
         builder: (context, state) {
