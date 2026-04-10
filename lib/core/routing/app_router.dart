@@ -12,6 +12,9 @@ import '../../features/add_product/ui/add_product_screen.dart';
 import '../services/image_service.dart';
 import '../services/product_service.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../features/vendor_home/cubit/vendor_cubit.dart';
+import '../../features/vendor_home/home_ui/vendor_home.dart';
 class AppRouter {
   static const String splash = '/';
   static const String onboarding = '/onboarding';
@@ -20,6 +23,7 @@ class AppRouter {
   static const String addProduct = '/add-product';
   static const String vendorProducts = '/vendor-products';
 
+  static const String vendorHome = '/vendor_home';
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -50,6 +54,12 @@ class AppRouter {
                   child: const VendorProductsScreen(),
                 )
 
+      case vendorHome:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => VendorCubit()..loadVendorHome(),
+            child: const VendorHome(),
+          ),
         );
       default:
         return MaterialPageRoute(

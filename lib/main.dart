@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         primaryColor: const Color(0xFF2D82FF),
         scaffoldBackgroundColor: const Color(0xFF0F1117),
-        fontFamily: 'Poppins', // إذا كنت ستستخدم خطاً مخصصاً لاحقاً
+        fontFamily: 'Poppins',
       ),
       initialRoute: AppRouter.splash,
       onGenerateRoute: AppRouter.generateRoute,
