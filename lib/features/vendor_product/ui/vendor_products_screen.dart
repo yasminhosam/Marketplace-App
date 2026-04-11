@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marketplace_app/core/models/product_model.dart';
+import 'package:marketplace_app/core/services/product_service.dart';
 import 'package:marketplace_app/features/vendor_product/cubit/vendor_products_cubit.dart';
 import 'package:marketplace_app/features/vendor_product/cubit/vendor_products_state.dart';
 
@@ -12,59 +13,45 @@ class VendorProductsScreen extends StatefulWidget {
 }
 
 class _VendorProductsScreenState extends State<VendorProductsScreen> {
-  final Color bgColor = const Color(0xFF13161E);
+  final Color bgColor = const Color(0xFF101622);
   final Color cardColor = const Color(0xFF1E212B);
 
   @override
-  void initState() {
-    super.initState();
-    //context.read<VendorProductsCubit>().fetchVendorProducts();
-    context.read<VendorProductsCubit>().loadDummyProducts();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
+    return BlocProvider(
+      create: (context) => VendorProductsCubit(ProductService())..fetchVendorProducts(),
+      child: Scaffold(
         backgroundColor: bgColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Products',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+        appBar: AppBar(
+          backgroundColor: bgColor,
+          elevation: 0,
+          title: const Text(
+            'Products',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: BlocBuilder<VendorProductsCubit, VendorProductsState>(
-        builder: (context, state) {
-          switch (state) {
-            case VendorProductsLoading():
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.blue),
-              );
-
-            case VendorProductsError(:final message):
+        body: BlocBuilder<VendorProductsCubit, VendorProductsState>(
+          builder: (context, state) {
+            if (state is VendorProductsLoading) {
+              return const Center(child: CircularProgressIndicator(color: Color(0xff135EF3)));
+            } else if (state is VendorProductsError) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Text(
-                    'Error: $message',
+                    'Error: ${state.message}',
                     style: const TextStyle(color: Colors.redAccent, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                 ),
               );
-
-            case VendorProductsLoaded(:final products):
-              if (products.isEmpty) {
+            } else if (state is VendorProductsLoaded) {
+              if (state.products.isEmpty) {
                 return const Center(
                   child: Text(
                     'No products found.',
@@ -81,57 +68,41 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                   mainAxisSpacing: 16,
                   childAspectRatio: 0.75,
                 ),
-                itemCount: products.length,
+                itemCount: state.products.length,
                 itemBuilder: (context, index) {
-                  return _buildProductCard(products[index]);
+                  return _buildProductCard(state.products[index]);
                 },
               );
-          }
-        },
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
 
-
   Widget _buildProductCard(ProductModel product) {
     return Container(
       decoration: BoxDecoration(
-        color: cardColor,
+        color: const Color(0xff101D36),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Expanded(
-            child: Container(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              width: double.infinity,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: product.imageUrl.isNotEmpty
-                    ? Image.network(
-                  product.imageUrl,
-                  fit: BoxFit.cover,
-                  // Fallback if the network image fails to load
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.broken_image,
-                    color: Colors.grey,
-                    size: 40,
-                  ),
-                )
-                    : const Icon(
-                  Icons.image,
-                  color: Colors.grey,
-                  size: 40,
-                ),
-              ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: product.imageUrl.isNotEmpty
+                  ? Image.network(
+                      product.imageUrl,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                    )
+                  : const Center(child: Icon(Icons.image, color: Colors.grey, size: 40)),
             ),
           ),
-
-
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -141,30 +112,19 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                   product.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '\$${product.price.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Color(0xff135EF3), fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   product.category,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
             ),

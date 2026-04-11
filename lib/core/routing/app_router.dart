@@ -12,7 +12,6 @@ import '../../features/add_product/ui/add_product_screen.dart';
 import '../services/image_service.dart';
 import '../services/product_service.dart';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/vendor_home/cubit/vendor_cubit.dart';
 import '../../features/vendor_home/home_ui/vendor_home.dart';
 class AppRouter {
@@ -52,7 +51,8 @@ class AppRouter {
                 BlocProvider(
                     create: (context) => VendorProductsCubit(ProductService()),
                   child: const VendorProductsScreen(),
-                )
+                ),
+        );
 
       case vendorHome:
         return MaterialPageRoute(
