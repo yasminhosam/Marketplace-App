@@ -1,6 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:marketplace_app/core/models/order_model.dart';
 import 'package:marketplace_app/features/vendor_orders/cubit/vendor_orders_cubit.dart';
 import 'package:marketplace_app/features/vendor_orders/cubit/vendor_orders_state.dart';
 import 'package:marketplace_app/features/vendor_orders/order_card.dart';
@@ -18,16 +18,14 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // بنغلف الشاشة بـ BlocProvider عشان نوفر الـ Cubit ليها
+    final vendorId = FirebaseAuth.instance.currentUser?.uid ?? "";
+    
     return BlocProvider(
-      create: (context) => VendorOrdersCubit()
-        ..fetchVendorOrders(
-          "As4ve9MN86ar6jYgLEb5eeg3OPS2",
-        ), // ID البائع من الفايربيز بتاعك
+      create: (context) => VendorOrdersCubit()..fetchVendorOrders(vendorId),
       child: Scaffold(
-        backgroundColor: const Color(0xFF0D1117),
+        backgroundColor: const Color(0xFF101622),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF0D1117),
+          backgroundColor: const Color(0xFF101622),
           elevation: 0,
           centerTitle: true,
           title: const Text(
@@ -41,7 +39,6 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
         ),
         body: Column(
           children: [
-            // 1. شريط التابات (الفلتر)
             Container(
               height: 50,
               decoration: const BoxDecoration(
@@ -63,9 +60,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.transparent,
+                            color: isSelected ? const Color(0xff135EF3) : Colors.transparent,
                             width: 2,
                           ),
                         ),
@@ -73,12 +68,8 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                       child: Text(
                         tab,
                         style: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF8B9CB6),
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
+                          color: isSelected ? Colors.white : const Color(0xFF8B9CB6),
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                         ),
                       ),
                     ),
@@ -86,83 +77,32 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                 },
               ),
             ),
-
-            // 2. محتوى الشاشة بناءً على حالة الـ Cubit
             Expanded(
               child: BlocBuilder<VendorOrdersCubit, VendorOrdersState>(
                 builder: (context, state) {
                   if (state is VendorOrdersLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF4A90E2),
-                      ),
-                    );
+                    return const Center(child: CircularProgressIndicator(color: Color(0xff135EF3)));
                   } else if (state is VendorOrdersError) {
-                    return Center(
-                      child: Text(
-                        state.errorMessage,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    );
+                    return Center(child: Text(state.errorMessage, style: const TextStyle(color: Colors.red)));
                   } else if (state is VendorOrdersLoaded) {
-                    // منطق الفلترة
                     final filteredOrders = _selectedTab == 'All'
                         ? state.orders
-                        : state.orders
-                              .where(
-                                (o) =>
-                                    o.status.toLowerCase() ==
-                                    _selectedTab.toLowerCase(),
-                              )
-                              .toList();
+                        : state.orders.where((o) => o.status.toLowerCase() == _selectedTab.toLowerCase()).toList();
 
                     if (filteredOrders.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          "No orders found",
-                          style: TextStyle(color: Color(0xFF8B9CB6)),
-                        ),
-                      );
+                      return const Center(child: Text("No orders found", style: TextStyle(color: Color(0xFF8B9CB6))));
                     }
 
                     return ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: filteredOrders.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) =>
-                          OrderCard(order: filteredOrders[index]),
+                      separatorBuilder: (_, _) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) => OrderCard(order: filteredOrders[index]),
                     );
                   }
                   return const SizedBox.shrink();
                 },
               ),
-            ),
-          ],
-        ),
-
-        // 3. شريط التنقل السفلي (Bottom Navigation Bar)
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: const Color(0xFF0D1117),
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF4A90E2),
-          unselectedItemColor: const Color(0xFF8B9CB6),
-          currentIndex: 2, // Orders Tab
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              label: 'HOME',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.inventory_2_outlined),
-              label: 'PRODUCTS',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_bag),
-              label: 'ORDERS',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'PROFILE',
             ),
           ],
         ),

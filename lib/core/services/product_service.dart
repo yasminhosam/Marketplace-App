@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:marketplace_app/core/models/product_model.dart';
 
 class ProductService {
@@ -11,6 +10,8 @@ class ProductService {
 
       final productMap=product.toMap();
       productMap['id']=productRef.id;
+      // Add createdAt for stats calculation
+      productMap['createdAt'] = FieldValue.serverTimestamp();
 
       await productRef.set(productMap);
     }catch(e){
@@ -35,4 +36,14 @@ class ProductService {
     }
   }
 
+  Stream<List<ProductModel>> getVendorProductsStream(String vendorId) {
+    return _firestore.collection('products')
+        .where('vendorId', isEqualTo: vendorId)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return ProductModel.fromMap(doc.data(), doc.id);
+      }).toList();
+    });
+  }
 }

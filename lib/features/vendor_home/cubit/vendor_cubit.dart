@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,54 +13,106 @@ class VendorCubit extends Cubit<VendorState> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  StreamSubscription? _userSub;
+  StreamSubscription? _productsSub;
+  StreamSubscription? _ordersSub;
+
+  UserModel? _currentUser;
+  List<QueryDocumentSnapshot>? _lastProducts;
+  List<QueryDocumentSnapshot>? _lastOrders;
 
   void loadVendorHome() {
     emit(VendorLoading());
     final user = _auth.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      emit(VendorError("User not logged in"));
+      return;
+    }
 
-    _firestore.collection('users').doc(user.uid).snapshots().listen((userSnap) async {
+    _cancelSubs();
+
+    // Listen to User
+    _userSub = _firestore.collection('users').doc(user.uid).snapshots().listen((userSnap) {
       if (!userSnap.exists) return;
-      final userModel = UserModel.fromMap(userSnap.data()!);
-      try {
-        final stats = await _calculateAllStats(user.uid);
-        if (!isClosed) emit(VendorLoaded(user: userModel, stats: stats));
-      } catch (e) {
-        if (!isClosed) emit(VendorError(e.toString()));
-      }
-    });
+      _currentUser = UserModel.fromMap(userSnap.data()!);
+      _updateStatsIfReady();
+    }, onError: (e) => emit(VendorError(e.toString())));
+
+    // Listen to Products
+    _productsSub = _firestore.collection('products').where('vendorId', isEqualTo: user.uid).snapshots().listen((snap) {
+      _lastProducts = snap.docs;
+      _updateStatsIfReady();
+    }, onError: (e) => emit(VendorError(e.toString())));
+
+    // Listen to Orders
+    _ordersSub = _firestore.collection('orders').where('vendorId', isEqualTo: user.uid).snapshots().listen((snap) {
+      _lastOrders = snap.docs;
+      _updateStatsIfReady();
+    }, onError: (e) => emit(VendorError(e.toString())));
   }
 
-  Future<VendorStatsModel> _calculateAllStats(String vendorId) async {
+  void _updateStatsIfReady() {
+    if (_currentUser != null && _lastProducts != null && _lastOrders != null) {
+      final stats = _calculateStats(_lastProducts!, _lastOrders!);
+      emit(VendorLoaded(user: _currentUser!, stats: stats));
+    }
+  }
+
+  VendorStatsModel _calculateStats(List<QueryDocumentSnapshot> products, List<QueryDocumentSnapshot> orders) {
     final now = DateTime.now();
     final firstDayCurrent = DateTime(now.year, now.month, 1);
     final firstDayLast = DateTime(now.year, now.month - 1, 1);
 
-    final allOrdersQuery = await _firestore.collection('orders').where('vendorId', isEqualTo: vendorId).get();
-    final allProductsQuery = await _firestore.collection('products').where('vendorId', isEqualTo: vendorId).get();
+    final currentOrders = orders.where((d) {
+      final date = (d.data() as Map<String, dynamic>)['createdAt'] is Timestamp 
+          ? ((d.data() as Map<String, dynamic>)['createdAt'] as Timestamp).toDate() 
+          : now;
+      return date.isAfter(firstDayCurrent);
+    }).toList();
 
-    final currentOrders = allOrdersQuery.docs.where((d) => (d['createdAt'] as Timestamp).toDate().isAfter(firstDayCurrent)).toList();
-    final lastMonthOrders = allOrdersQuery.docs.where((d) {
-      final date = (d['createdAt'] as Timestamp).toDate();
+    final lastMonthOrders = orders.where((d) {
+      final date = (d.data() as Map<String, dynamic>)['createdAt'] is Timestamp 
+          ? ((d.data() as Map<String, dynamic>)['createdAt'] as Timestamp).toDate() 
+          : now;
       return date.isAfter(firstDayLast) && date.isBefore(firstDayCurrent);
     }).toList();
 
-    double sumSales(List<QueryDocumentSnapshot> docs) => docs.fold(0.0, (acc, d) => acc + (d['totalPrice'] ?? 0.0).toDouble());
+    double sumSales(List<QueryDocumentSnapshot> docs) => 
+        docs.fold(0.0, (acc, d) => acc + ((d.data() as Map<String, dynamic>)['totalPrice'] ?? 0.0).toDouble());
 
     return VendorStatsModel.fromCalculatedData(
-      totalSales: sumSales(allOrdersQuery.docs),
+      totalSales: sumSales(orders),
       currentMonthSales: sumSales(currentOrders),
       lastMonthSales: sumSales(lastMonthOrders),
-      totalProducts: allProductsQuery.docs.length,
-      lastMonthProducts: allProductsQuery.docs.where((d) => (d['createdAt'] as Timestamp).toDate().isBefore(firstDayCurrent)).length,
+      totalProducts: products.length,
+      lastMonthProducts: products.where((d) {
+        final date = (d.data() as Map<String, dynamic>)['createdAt'] is Timestamp 
+            ? ((d.data() as Map<String, dynamic>)['createdAt'] as Timestamp).toDate() 
+            : now;
+        return date.isBefore(firstDayCurrent);
+      }).length,
+      totalOrders: orders.length,
+      lastMonthOrdersCount: lastMonthOrders.length,
       revenueSpots: _generateDailySpots(currentOrders),
-      inventorySpots: _generateDailySpots(allProductsQuery.docs),
+      inventorySpots: _generateDailySpots(products),
     );
   }
 
   List<FlSpot> _generateDailySpots(List<QueryDocumentSnapshot> docs) {
     if (docs.isEmpty) return [const FlSpot(0, 0), const FlSpot(6, 0)];
-
     return [const FlSpot(0, 2), const FlSpot(2, 5), const FlSpot(4, 3), const FlSpot(6, 8)];
+  }
+
+  void _cancelSubs() {
+    _userSub?.cancel();
+    _productsSub?.cancel();
+    _ordersSub?.cancel();
+  }
+
+  @override
+  Future<void> close() {
+    _cancelSubs();
+    return super.close();
   }
 }

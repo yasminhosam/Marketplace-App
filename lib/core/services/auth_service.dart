@@ -20,10 +20,12 @@ class AuthService {
       User? user = userCredential.user;
       if (user == null) return null;
 
+      /* 
       if (!user.emailVerified) {
         await user.sendEmailVerification();
         return null; // cubit will emit AuthEmailNotVerified
       }
+      */
 
       return await getUser(user.uid);
     } on FirebaseAuthException catch (e) {

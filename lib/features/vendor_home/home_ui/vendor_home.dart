@@ -3,7 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:marketplace_app/core/services/image_service.dart';
+import 'package:marketplace_app/core/services/product_service.dart';
+import 'package:marketplace_app/features/add_product/cubit/add_product_cubit.dart';
+import 'package:marketplace_app/features/add_product/ui/add_product_screen.dart';
+import 'package:marketplace_app/features/vendor_home/home_ui/vendor_profile_screen.dart';
 import '../cubit/vendor_cubit.dart';
+import '../../vendor_product/ui/vendor_products_screen.dart';
+import '../../vendor_orders/vendor_orders_screen.dart';
 
 class VendorHome extends StatefulWidget {
   const VendorHome({super.key});
@@ -32,9 +39,9 @@ class _VendorHomeState extends State<VendorHome> {
 
           final List<Widget> pages = [
             DashboardView(userName: user.name, stats: stats),
-            const ComingSoonScreen(featureName: "Products"),
-            const ComingSoonScreen(featureName: "Orders"),
-            const ComingSoonScreen(featureName: "Profile"),
+            const VendorProductsScreen(),
+            const VendorOrdersScreen(),
+            VendorProfileScreen(user: user),
           ];
 
           return Scaffold(
@@ -42,7 +49,15 @@ class _VendorHomeState extends State<VendorHome> {
             body: IndexedStack(index: _currentIndex, children: pages),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (c) => const ComingSoonScreen(featureName: "Add Product")));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (c) => BlocProvider(
+                      create: (context) => AddProductCubit(ProductService(), CloudinaryService()),
+                      child: const AddProductScreen(),
+                    ),
+                  ),
+                );
               },
               backgroundColor: const Color(0xff135BEC),
               shape: const CircleBorder(),
@@ -130,12 +145,21 @@ class DashboardView extends StatelessWidget {
                 StatCard(
                   title: "Total Products",
                   value: stats.totalProducts.toString(),
+                  icon: FontAwesomeIcons.box,
                   current: stats.totalProducts.toDouble(),
                   previous: stats.lastMonthProducts.toDouble(),
                 ),
                 StatCard(
+                  title: "Total Orders",
+                  value: stats.totalOrders.toString(),
+                  icon: FontAwesomeIcons.cartShopping,
+                  current: stats.totalOrders.toDouble(),
+                  previous: stats.lastMonthOrdersCount.toDouble(),
+                ),
+                StatCard(
                   title: "Total Sales",
                   value: "\$${stats.totalSales.toStringAsFixed(1)}",
+                  icon: FontAwesomeIcons.dollarSign,
                   current: stats.currentMonthSales,
                   previous: stats.lastMonthSales,
                 ),
@@ -168,7 +192,7 @@ class DashboardView extends StatelessWidget {
       children: [
         Text(title, style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
         GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const ComingSoonScreen(featureName: "Details"))),
+          onTap: () {},
           child: Text("Details", style: GoogleFonts.poppins(color: const Color(0xff135EF3), fontWeight: FontWeight.w600)),
         ),
       ],
@@ -178,9 +202,10 @@ class DashboardView extends StatelessWidget {
 
 class StatCard extends StatelessWidget {
   final String title, value;
+  final IconData icon;
   final double current, previous;
 
-  const StatCard({super.key, required this.title, required this.value, required this.current, required this.previous});
+  const StatCard({super.key, required this.title, required this.value, required this.icon, required this.current, required this.previous});
 
   @override
   Widget build(BuildContext context) {
@@ -198,18 +223,24 @@ class StatCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(title, style: const TextStyle(fontSize: 14, color: Color(0xff9cabc1))),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 12, color: Color(0xff9cabc1))),
+                Icon(icon, size: 14, color: const Color(0xff135EF3)),
+              ],
+            ),
             const SizedBox(height: 4),
             FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(value, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 24, color: Colors.white)),
+              child: Text(value, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 22, color: Colors.white)),
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(isPos ? FontAwesomeIcons.arrowTrendUp : FontAwesomeIcons.arrowTrendDown, color: trendColor, size: 12),
+                Icon(isPos ? FontAwesomeIcons.arrowTrendUp : FontAwesomeIcons.arrowTrendDown, color: trendColor, size: 10),
                 const SizedBox(width: 6),
-                Text("${isPos ? '+' : ''}${percent.toStringAsFixed(1)}%", style: TextStyle(color: trendColor, fontWeight: FontWeight.w500, fontSize: 12)),
+                Text("${isPos ? '+' : ''}${percent.toStringAsFixed(1)}%", style: TextStyle(color: trendColor, fontWeight: FontWeight.w500, fontSize: 10)),
               ],
             ),
           ],
@@ -290,19 +321,6 @@ class CustomStatChartCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class ComingSoonScreen extends StatelessWidget {
-  final String featureName;
-  const ComingSoonScreen({super.key, required this.featureName});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xff101622),
-      appBar: AppBar(backgroundColor: Colors.transparent, iconTheme: const IconThemeData(color: Colors.white)),
-      body: Center(child: Text("$featureName Coming Soon!", style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
     );
   }
 }

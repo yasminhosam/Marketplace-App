@@ -56,9 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         // listenWhen prevents re-firing when the state object is the same reference,
-
         listenWhen: (previous, current) =>
-        current is AuthError ||
+            current is AuthError ||
             current is AuthEmailNotVerified ||
             current is AuthPasswordResetSent ||
             current is AuthenticatedClient ||
@@ -222,11 +221,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: state is AuthLoading
                           ? null
                           : () {
-                        // Trigger reset password flow
-                        // context.read<AuthCubit>().resetPassword(
-                        //   email: _emailController.text.trim(),
-                        // );
-                      },
+                              // Trigger reset password flow
+                              // context.read<AuthCubit>().resetPassword(
+                              //   email: _emailController.text.trim(),
+                              // );
+                            },
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
                         minimumSize: Size.zero,
@@ -234,8 +233,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: const Text(
                         'Forgot Password?',
-                        style:
-                        TextStyle(color: Color(0xFF4A90E2), fontSize: 13),
+                        style: TextStyle(
+                          color: Color(0xFF4A90E2),
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ),
@@ -247,11 +248,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: state is AuthLoading
                           ? null
                           : () {
-                        context.read<AuthCubit>().login(
-                          email: _emailController.text.trim(),
-                          password: _passwordController.text.trim(),
-                        );
-                      },
+                              context.read<AuthCubit>().login(
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text.trim(),
+                              );
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4A90E2),
                         shape: RoundedRectangleBorder(
@@ -262,13 +263,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: state is AuthLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
-                        'Log In  ↪',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                              'Log In  ↪',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -282,7 +283,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'OR',
                           style: TextStyle(
-                              color: Color(0xFF8B9CB6), fontSize: 12),
+                            color: Color(0xFF8B9CB6),
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -303,8 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           label: const Text(
                             'Google',
-                            style:
-                            TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Colors.white, fontSize: 14),
                           ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -326,8 +328,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           label: const Text(
                             'Apple',
-                            style:
-                            TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Colors.white, fontSize: 14),
                           ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -348,7 +349,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text(
                           "Don't have an account? ",
                           style: TextStyle(
-                              color: Color(0xFF8B9CB6), fontSize: 13),
+                            color: Color(0xFF8B9CB6),
+                            fontSize: 13,
+                          ),
                         ),
                         GestureDetector(
                           onTap: () {
