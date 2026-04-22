@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
           } else if (state is AuthenticatedClient) {
             // Navigator.pushReplacementNamed(context, '/clientHome');
           } else if (state is AuthenticatedVendor) {
-            // Navigator.pushReplacementNamed(context, '/vendorHome');
+             Navigator.pushReplacementNamed(context, AppRouter.vendorHome);
           } else if (state is AuthEmailNotVerified) {
             Navigator.pushReplacementNamed(context, AppRouter.login);
           }
@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 const SizedBox(height: 28),
                 const Text(
-                  'CampusCart',
+                  'Tijara',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 30,
@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'The student marketplace',
+                  'Your universal marketplace',
                   style: TextStyle(color: Color(0xFF8B9CB6), fontSize: 15),
                 ),
                 const Spacer(flex: 4),
@@ -94,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'SYNCING MARKETPLACE',
+                      'AUTHENTICATING...',
                       style: TextStyle(
                         color: Color(0xFF8B9CB6),
                         fontSize: 11,
@@ -127,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildRoleChip(Icons.person_outline, 'STUDENT'),
+                    _buildRoleChip(Icons.person_outline, 'CLIENT'),
                     const SizedBox(width: 40),
                     _buildRoleChip(Icons.store_outlined, 'VENDOR'),
                   ],

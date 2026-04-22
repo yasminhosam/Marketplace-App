@@ -97,6 +97,10 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> resetPassword({required String email}) async {
+    if (email.isEmpty) {
+      emit(AuthError("Please enter your email address first."));
+      return;
+    }
     emit(AuthLoading());
     try {
       await _authService.resetPassword(email: email);

@@ -222,16 +222,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
 
                   const SizedBox(height: 40),
-                  const Center(
-                    child: Text(
-                      "STUDENT MARKETPLACE APP",
-                      style: TextStyle(
-                          color: Colors.white12,
-                          fontSize: 12,
-                          letterSpacing: 1.5,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                  // const Center(
+                  //   child: Text(
+                  //     "STUDENT MARKETPLACE APP",
+                  //     style: TextStyle(
+                  //         color: Colors.white12,
+                  //         fontSize: 12,
+                  //         letterSpacing: 1.5,
+                  //         fontWeight: FontWeight.bold),
+                  //   ),
+                  // ),
                   const SizedBox(height: 20),
                 ],
               ),
