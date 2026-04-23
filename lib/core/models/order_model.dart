@@ -5,6 +5,7 @@ class OrderModel {
   final String clientId;
   final String clientName; // ضفنا اسم العميل
   final String vendorId;
+  final String vendorName;
   final String status; // ضفنا حالة الطلب (New, Processing, Delivered)
   final List<CartItemModel> items;
   final double totalAmount;
@@ -15,6 +16,7 @@ class OrderModel {
     required this.clientId,
     this.clientName = 'Unknown Client', // قيمة افتراضية
     required this.vendorId,
+    required this.vendorName,
     this.status = 'New', // أي طلب جديد بياخد الحالة دي افتراضياً
     required this.items,
     required this.totalAmount,
@@ -25,10 +27,10 @@ class OrderModel {
     return OrderModel(
       id: documentId,
       clientId: map['clientId'] ?? '',
-      clientName: map['clientName'] ?? 'Unknown Client', // نقرأ اسم العميل
+      clientName: map['clientName'] ?? 'Unknown Client',
       vendorId: map['vendorId'] ?? '',
-      status: map['status'] ?? 'New', // نقرأ الحالة
-      // Map the list of cart item maps back into CartItemModel objects
+      vendorName: map['vendorName'] ??'Unknown vendor',
+      status: map['status'] ?? 'New',
       items: List<CartItemModel>.from(
         (map['items'] ?? []).map((item) => CartItemModel.fromMap(item)),
       ),
@@ -42,9 +44,10 @@ class OrderModel {
   Map<String, dynamic> toMap() {
     return {
       'clientId': clientId,
-      'clientName': clientName, // نحفظ اسم العميل
+      'clientName': clientName,
       'vendorId': vendorId,
-      'status': status, // نحفظ الحالة
+      'vendorName' : vendorName,
+      'status': status,
       // Convert the objects back into standard maps for Firestore
       'items': items.map((item) => item.toMap()).toList(),
       'totalAmount': totalAmount,

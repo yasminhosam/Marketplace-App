@@ -9,6 +9,7 @@ import 'package:marketplace_app/features/vendor_product/ui/vendor_products_scree
 
 import '../../features/add_product/cubit/add_product_cubit.dart';
 import '../../features/add_product/ui/add_product_screen.dart';
+import '../../features/customer_orders/UI/customer_orders_screen.dart';
 import '../services/image_service.dart';
 import '../services/product_service.dart';
 
@@ -21,7 +22,6 @@ class AppRouter {
   static const String register = '/register';
   static const String addProduct = '/add-product';
   static const String vendorProducts = '/vendor-products';
-
   static const String vendorHome = '/vendor_home';
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
