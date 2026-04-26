@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:marketplace_app/core/services/category_service.dart';
 import 'package:marketplace_app/core/services/image_service.dart';
 import 'package:marketplace_app/core/services/product_service.dart';
 import 'package:marketplace_app/features/add_product/cubit/add_product_cubit.dart';
@@ -53,7 +54,7 @@ class _VendorHomeState extends State<VendorHome> {
                   context,
                   MaterialPageRoute(
                     builder: (c) => BlocProvider(
-                      create: (context) => AddProductCubit(ProductService(), CloudinaryService()),
+                      create: (context) => AddProductCubit(ProductService(), CloudinaryService(),CategoryService()),
                       child: const AddProductScreen(),
                     ),
                   ),

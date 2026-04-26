@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_app/core/models/category_model.dart';
 
 class CategoryDropdown extends StatelessWidget {
   final String? value;
+  final List<CategoryModel> categories;
   final ValueChanged<String?> onChanged;
   final Color fillColor;
 
   const CategoryDropdown({
     super.key,
     required this.value,
+    required this.categories,
     required this.onChanged,
     required this.fillColor,
   });
@@ -28,9 +31,8 @@ class CategoryDropdown extends StatelessWidget {
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
           isExpanded: true,
           style: const TextStyle(color: Colors.white),
-          items: ['Clothing', 'Electronics', 'Home']
-              .map((String category) {
-            return DropdownMenuItem(value: category, child: Text(category));
+          items:categories.map((CategoryModel category) {
+            return DropdownMenuItem(value: category.id, child: Text(category.name));
           }).toList(),
           onChanged: onChanged,
         ),

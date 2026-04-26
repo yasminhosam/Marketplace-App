@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:marketplace_app/core/models/category_model.dart';
 import 'package:marketplace_app/core/models/product_model.dart';
+import 'package:marketplace_app/core/services/category_service.dart';
 import 'package:marketplace_app/core/services/product_service.dart';
 import 'package:marketplace_app/core/services/image_service.dart';
 import 'package:marketplace_app/features/add_product/cubit/add_product_state.dart';
@@ -11,12 +13,20 @@ class AddProductCubit extends Cubit<AddProductState> {
   final ProductService _productService;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final CloudinaryService _cloudinaryService;
+  final CategoryService _categoryService;
 
-  AddProductCubit(this._productService, this._cloudinaryService) : super(AddProductInitial());
+  List<CategoryModel> _cachedCategories =[];
+  List<CategoryModel> get cachedCategories => _cachedCategories;
+
+  AddProductCubit(
+      this._productService,
+      this._cloudinaryService,
+      this._categoryService
+      ) : super(AddProductInitial());
 
   Future<void> saveProduct({
     required String name,
-    required String category,
+    required String categoryId,
     required double price,
     required int quantity,
     required String description,
@@ -40,7 +50,7 @@ class AddProductCubit extends Cubit<AddProductState> {
           id: '',
           vendorId: vendorId,
           name: name,
-          category: category,
+          categoryId: categoryId,
           imageUrl: finalImageUrl,
           price: price,
           quantity: quantity,
@@ -53,6 +63,21 @@ class AddProductCubit extends Cubit<AddProductState> {
 
     } catch (e) {
       emit(AddProductFailure(e.toString()));
+    }
+  }
+
+  Future<void> fetchCategories() async{
+    if (_cachedCategories.isNotEmpty) {
+      emit(AddProductCategoriesLoaded(_cachedCategories));
+      return;
+    }
+
+    emit(AddProductCategoriesLoading());
+    try{
+      _cachedCategories = await _categoryService.getAllCategories();
+      emit(AddProductCategoriesLoaded(_cachedCategories));
+    }catch(e){
+      emit(AddProductCategoriesFailure("Failed to load categories: ${e.toString()}"));
     }
   }
 }

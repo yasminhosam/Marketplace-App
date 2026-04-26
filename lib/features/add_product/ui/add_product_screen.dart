@@ -25,7 +25,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _quantityController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  String? _selectedCategory;
+  String? _selectedCategoryId;
   File? _selectedImageFile;
 
   final Color bgColor = const Color(0xFF13161E);
@@ -39,6 +39,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _quantityController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+  @override
+  void initState() {
+    super.initState();
+    context.read<AddProductCubit>().fetchCategories();
   }
 
   @override
@@ -97,14 +102,34 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
               const SectionTitle(title: 'Category'),
               const SizedBox(height: 8),
-              CategoryDropdown(
-                value: _selectedCategory,
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
+              BlocBuilder<AddProductCubit, AddProductState>(
+                builder: (context, state) {
+                  final categories = context.read<AddProductCubit>().cachedCategories;
+
+                  if (categories.isEmpty && state is AddProductCategoriesLoading) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  if (categories.isEmpty && state is AddProductCategoriesFailure) {
+                    return Text(
+                      (state as AddProductCategoriesFailure).errorMessage,
+                      style: const TextStyle(color: Colors.red),
+                    );
+                  }
+
+                  if (categories.isNotEmpty) {
+                    return CategoryDropdown(
+                      value: _selectedCategoryId,
+                      categories: categories,
+                      onChanged: (newValue) {
+                        setState(() => _selectedCategoryId = newValue);
+                      },
+                      fillColor: inputColor,
+                    );
+                  }
+
+                  return const CircularProgressIndicator();
                 },
-                fillColor: inputColor,
               ),
               const SizedBox(height: 20),
 
@@ -212,7 +237,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                   if (_formKey.currentState!.validate()) {
 
-                    if (_selectedCategory == null) {
+                    if (_selectedCategoryId == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Please select a category')),
                       );
@@ -222,7 +247,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                     context.read<AddProductCubit>().saveProduct(
                       name: _nameController.text,
-                      category: _selectedCategory!,
+                      categoryId: _selectedCategoryId!,
                       price: double.tryParse(_priceController.text) ?? 0.0,
                       quantity: int.tryParse(_quantityController.text) ?? 0,
                       description: _descriptionController.text,

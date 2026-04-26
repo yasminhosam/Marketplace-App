@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marketplace_app/core/models/product_model.dart';
+import 'package:marketplace_app/core/services/category_service.dart';
 import 'package:marketplace_app/core/services/product_service.dart';
 import 'package:marketplace_app/features/vendor_product/cubit/vendor_products_cubit.dart';
 import 'package:marketplace_app/features/vendor_product/cubit/vendor_products_state.dart';
+
+import '../../../core/models/category_model.dart';
 
 class VendorProductsScreen extends StatefulWidget {
   const VendorProductsScreen({super.key});
@@ -19,7 +22,7 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => VendorProductsCubit(ProductService())..fetchVendorProducts(),
+      create: (context) => VendorProductsCubit(ProductService(),CategoryService())..fetchVendorProducts(),
       child: Scaffold(
         backgroundColor: bgColor,
         appBar: AppBar(
@@ -70,7 +73,7 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                 ),
                 itemCount: state.products.length,
                 itemBuilder: (context, index) {
-                  return _buildProductCard(state.products[index]);
+                  return _buildProductCard(state.products[index],state.categories);
                 },
               );
             }
@@ -81,7 +84,12 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
     );
   }
 
-  Widget _buildProductCard(ProductModel product) {
+  Widget _buildProductCard(ProductModel product,List<CategoryModel> categories ) {
+    String categoryName = "Unknown Category";
+
+      final matchedCategory = categories.firstWhere((cat) => cat.id == product.categoryId);
+      categoryName = matchedCategory.name;
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xff101D36),
@@ -121,7 +129,7 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  product.category,
+                 categoryName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.grey, fontSize: 12),

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:marketplace_app/core/services/category_service.dart';
 import 'package:marketplace_app/features/auth/login/login_screen.dart';
+import 'package:marketplace_app/features/client_home/cubit/client_home_cubit.dart';
+import 'package:marketplace_app/features/client_home/ui/client_home_screen.dart';
 import 'package:marketplace_app/features/splash/splash_screen.dart';
 import 'package:marketplace_app/features/onboarding/onboarding_screen.dart';
 import 'package:marketplace_app/features/auth/register/register_screen.dart';
 import 'package:marketplace_app/features/vendor_product/cubit/vendor_products_cubit.dart';
 import 'package:marketplace_app/features/vendor_product/ui/vendor_products_screen.dart';
-
 import '../../features/add_product/cubit/add_product_cubit.dart';
 import '../../features/add_product/ui/add_product_screen.dart';
 import '../services/image_service.dart';
 import '../services/product_service.dart';
-
 import '../../features/vendor_home/cubit/vendor_cubit.dart';
 import '../../features/vendor_home/home_ui/vendor_home.dart';
+
 class AppRouter {
   static const String splash = '/';
   static const String onboarding = '/onboarding';
@@ -23,6 +25,7 @@ class AppRouter {
   static const String vendorProducts = '/vendor-products';
 
   static const String vendorHome = '/vendor_home';
+  static const String clientHome = '/client_home';
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -35,25 +38,21 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
       case addProduct:
         return MaterialPageRoute(
-          builder: (_) =>
-              BlocProvider(
-                create: (context) =>
-                    AddProductCubit(
-                      ProductService(),
-                      CloudinaryService(),
-                    ),
-                child: const AddProductScreen(),
-              ),
+          builder: (_) =>   const AddProductScreen(),
         );
       case vendorProducts:
         return MaterialPageRoute(
             builder: (_) =>
                 BlocProvider(
-                    create: (context) => VendorProductsCubit(ProductService()),
+                    create: (context) => VendorProductsCubit(ProductService(),CategoryService()),
                   child: const VendorProductsScreen(),
                 ),
         );
 
+      case clientHome :
+        return MaterialPageRoute(
+            builder: (_) => const ClientHomeScreen()
+        );
       case vendorHome:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(

@@ -2,7 +2,7 @@ class ProductModel {
   final String id; // Firestore document ID
   final String vendorId; // Links the product to the vendor who created it
   final String name;
-  final String category;
+  final String categoryId;
   final String imageUrl;
   final double price;
   final int quantity;
@@ -12,7 +12,7 @@ class ProductModel {
     required this.id,
     required this.vendorId,
     required this.name,
-    required this.category,
+    required this.categoryId,
     required this.imageUrl,
     required this.price,
     required this.quantity,
@@ -24,7 +24,7 @@ class ProductModel {
       id: documentId,
       vendorId: map['vendorId'] ?? '',
       name: map['name'] ?? '',
-      category: map['category'] ?? '',
+      categoryId: map['categoryId'] ?? '',
       imageUrl: map['imageUrl'] ?? '',
       price: (map['price'] ?? 0.0).toDouble(),
       quantity: map['quantity'] ?? 0,
@@ -36,7 +36,7 @@ class ProductModel {
     return {
       'vendorId': vendorId,
       'name': name,
-      'category': category,
+      'categoryId': categoryId,
       'imageUrl': imageUrl,
       'price': price,
       'quantity': quantity,

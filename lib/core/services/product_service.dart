@@ -18,23 +18,7 @@ class ProductService {
       throw Exception('Failed to add product: ${e.toString()}');
     }
   }
-
-  Future<List<ProductModel>> getVendorProducts ( String vendorId)async{
-    try {
-      final snapshot = await _firestore.collection('products')
-          .where('vendorId',isEqualTo: vendorId).get();
-      final List<ProductModel> productList= snapshot.docs.map((doc){
-        final data = doc.data();
-        return ProductModel.fromMap(data,doc.id);
-      }).toList();
-
-      return productList;
-
-    }catch (e) {
-
-      throw Exception('Failed to load vendor products: $e');
-    }
-  }
+  
 
   Stream<List<ProductModel>> getVendorProductsStream(String vendorId) {
     return _firestore.collection('products')
@@ -46,4 +30,16 @@ class ProductService {
       }).toList();
     });
   }
+  Stream<List<ProductModel>>  getAllProducts(){
+   
+      return _firestore.collection("products")
+      .orderBy('createdAt',descending: true)
+          .snapshots()
+          .map((snapshot){
+            return snapshot.docs.map((doc) {
+              return ProductModel.fromMap(doc.data(), doc.id);
+            }).toList();
+      });
+      
+  } 
 }

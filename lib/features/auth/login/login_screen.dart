@@ -79,7 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
           else if (state is AuthenticatedClient) {
-            _showSnackBar('Login Successfully', color: Colors.green);
+            _showSnackBar('Welcome to Tijara', color: Colors.green);
+            Navigator.pushReplacementNamed(context, AppRouter.clientHome);
           } else if (state is AuthenticatedVendor) {
             _showSnackBar('Welcome to Tijara', color: Colors.green);
             Navigator.pushReplacementNamed(context, AppRouter.vendorHome);

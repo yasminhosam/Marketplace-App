@@ -4,15 +4,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marketplace_app/core/services/product_service.dart';
 import 'package:marketplace_app/features/vendor_product/cubit/vendor_products_state.dart';
 import '../../../core/models/product_model.dart';
+import '../../../core/services/category_service.dart';
 
 class VendorProductsCubit extends Cubit<VendorProductsState>{
   final ProductService _productService;
+  final CategoryService _categoryService;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   StreamSubscription? _productsSubscription;
 
-  VendorProductsCubit(this._productService): super(VendorProductsLoading());
+  VendorProductsCubit(this._productService,this._categoryService)
+      : super(VendorProductsLoading());
 
-  void fetchVendorProducts() {
+  Future<void> fetchVendorProducts() async {
     emit(VendorProductsLoading());
     final vendorId = _firebaseAuth.currentUser?.uid;
     
@@ -20,16 +23,21 @@ class VendorProductsCubit extends Cubit<VendorProductsState>{
       emit(VendorProductsError("User not logged in"));
       return;
     }
-
-    _productsSubscription?.cancel();
-    _productsSubscription = _productService.getVendorProductsStream(vendorId).listen(
-      (products) {
-        emit(VendorProductsLoaded(products));
-      },
-      onError: (e) {
-        emit(VendorProductsError(e.toString()));
-      }
-    );
+    try {
+      final categories = await _categoryService.getAllCategories();
+      _productsSubscription?.cancel();
+      _productsSubscription =
+          _productService.getVendorProductsStream(vendorId).listen(
+                  (products) {
+                emit(VendorProductsLoaded(products,categories));
+              },
+              onError: (e) {
+                emit(VendorProductsError(e.toString()));
+              }
+          );
+    }catch (e){
+      emit(VendorProductsError("Failed to load data: $e"));
+    }
   }
 
   @override
@@ -38,30 +46,5 @@ class VendorProductsCubit extends Cubit<VendorProductsState>{
     return super.close();
   }
 
-  // We keep this just in case, though we prefer the real data stream
-  void loadDummyProducts() {
-    final dummies = [
-      ProductModel(
-        id: '1',
-        vendorId: 'dummy',
-        name: 'Vintage Denim Jacket',
-        category: 'Clothing',
-        price: 49.99,
-        quantity: 10,
-        description: 'A classic blue denim jacket in great condition.',
-        imageUrl: 'https://picsum.photos/seed/jacket/300/300',
-      ),
-      ProductModel(
-        id: '2',
-        vendorId: 'dummy',
-        name: 'Leather Sneakers',
-        category: 'Shoes',
-        price: 89.99,
-        quantity: 5,
-        description: 'Clean white leather sneakers, barely worn.',
-        imageUrl: 'https://picsum.photos/seed/shoes/300/300',
-      ),
-    ];
-    emit(VendorProductsLoaded(dummies));
-  }
+
 }
