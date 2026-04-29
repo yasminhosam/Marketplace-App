@@ -7,6 +7,7 @@ import 'package:marketplace_app/core/services/product_service.dart';
 import 'package:marketplace_app/core/theme/app_colors.dart';
 import 'package:marketplace_app/features/client_home/cubit/client_home_cubit.dart';
 import 'package:marketplace_app/features/client_home/cubit/client_home_state.dart';
+import '../../cart/main_cart/ui/main_cart_ui.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   const ClientHomeScreen({Key? key}) : super(key: key);
@@ -44,9 +45,14 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 child: IconButton(
                   icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
                   onPressed: () {
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MainCart(),
+                      ),
+                    );
                   },
-                ),
+                )
               ),
             ],
           ),
