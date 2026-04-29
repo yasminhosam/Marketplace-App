@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../client_home/ui/client_home_screen.dart';
+
 class EmptyCart extends StatelessWidget {
   const EmptyCart({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery
+        .of(context)
+        .size;
     final width = size.width;
 
     return Center(
@@ -56,21 +60,41 @@ class EmptyCart extends StatelessWidget {
               ),
             ),
             SizedBox(height: size.height * 0.04),
-            _buildButton("Start Shopping", width),
+            _buildButton(
+              text: "Start Shopping",
+              width: width,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ClientHomeScreen()),
+                );
+              },
+            ),
             const SizedBox(height: 12),
-            _buildButton("View My Wishlist", width),
+            _buildButton(
+              text: "View My Wishist",
+              width: width,
+              onTap: () {},
+            ),
           ],
         ),
       ),
     );
   }
+};
 
-  Widget _buildButton(String text, double width) {
+
+  Widget _buildButton({
+    required String text,
+    required double width,
+    required VoidCallback onTap,
+  }) {
     return SizedBox(
       width: width * 0.7,
       height: 50,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xff4E12C7),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -86,4 +110,3 @@ class EmptyCart extends StatelessWidget {
       ),
     );
   }
-}
