@@ -30,15 +30,20 @@ class MainCart extends StatelessWidget {
           ),
           leading: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xff1B0F36),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.white,
-                size: 22,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context); // دي اللي بترجعك للصفحة السابقة
+              },
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xff1B0F36),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
             ),
           ),
