@@ -99,23 +99,83 @@ class CartCubit extends Cubit<CartState> {
     }
   }
 
-  Future<void> checkout({required String clientId, required String clientName}) async {
+ Future<void> checkout({required String clientId, required String clientName}) async {
     if (_items.isEmpty) return;
     try {
       emit(CartLoading());
       final batch = FirebaseFirestore.instance.batch();
+
+      // 1. Generate a unique ID for the order
       final String orderId = FirebaseFirestore.instance.collection('orders').doc().id;
+      final String orderDate = DateTime.now().toIso8601String(); // Same format as your image
+
+      // Group items by vendor to handle multiple vendors in one checkout
+      Map<String, List<CartItemModel>> groupedItems = {};
+      for (var item in _items) {
+        groupedItems.putIfAbsent(item.vendorId, () => []).add(item);
+      }
+
+      for (var vendorId in groupedItems.keys) {
+        final vendorItems = groupedItems[vendorId]!;
+        double vendorTotal = vendorItems.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity));
+
+        // A. Path for the Vendor: vendor_orders -> vendorId -> orders -> orderId
+        final vOrderRef = FirebaseFirestore.instance
+            .collection('vendor_orders')
+            .doc(vendorId)
+            .collection('orders')
+            .doc(orderId);
+
+        batch.set(vOrderRef, {
+          'orderId': orderId,
+          'clientId': clientId,
+          'clientName': clientName,
+          'items': vendorItems.map((e) => e.toMap()).toList(),
+          'totalAmount': vendorTotal,
+          'status': 'processing', // Matches your image
+          'orderDate': orderDate,
+        });
+      }
+
+      // B. Path for the Client: client_orders -> clientId -> orders -> orderId
+      final cOrderRef = FirebaseFirestore.instance
+          .collection('client_orders')
+          .doc(clientId)
+          .collection('orders')
+          .doc(orderId);
+
+      batch.set(cOrderRef, {
+        'orderId': orderId,
+        'items': _items.map((e) => e.toMap()).toList(),
+        'totalAmount': _items.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity)) + 25,
+        'status': 'processing',
+        'orderDate': orderDate,
+      });
+
+      // C. General Path (The one in your image): orders -> orderId
+      final gOrderRef = FirebaseFirestore.instance.collection('orders').doc(orderId);
+      batch.set(gOrderRef, {
+        'clientId': clientId,
+        'clientName': clientName,
+        'items': _items.map((e) => e.toMap()).toList(),
+        'totalAmount': _items.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity)) + 25,
+        'status': 'processing',
+        'orderDate': orderDate,
+        'vendorId': _items.first.vendorId, // As shown in your image
+      });
+
+      // D. Clean up: Stock update & Delete from Cart
       for (var item in _items) {
         batch.update(FirebaseFirestore.instance.collection('products').doc(item.productId),
             {'quantity': FieldValue.increment(-item.selectedQuantity)});
-        batch.set(FirebaseFirestore.instance.collection('vendor_orders').doc(item.vendorId).collection('orders').doc(orderId),
-            {...item.toMap(), 'orderId': orderId, 'status': 'New', 'orderDate': FieldValue.serverTimestamp()});
+
         batch.delete(FirebaseFirestore.instance.collection('carts').doc(clientId).collection('items').doc(item.docId!));
       }
 
       await batch.commit();
       _items.clear();
       emit(CartLoaded([]));
+
     } catch (e) {
       emit(CartError("Checkout failed: $e"));
       fetchCart(clientId);
