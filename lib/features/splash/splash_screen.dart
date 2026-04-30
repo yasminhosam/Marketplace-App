@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marketplace_app/core/routing/app_router.dart';
 import 'package:marketplace_app/features/auth/cubit/auth_cubit.dart';
 import 'package:marketplace_app/features/auth/cubit/auth_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,6 +14,8 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   double _progress = 0.0;
+  bool _isProgressDone = false;
+
 
   @override
   void initState() {
@@ -30,8 +33,31 @@ class _SplashScreenState extends State<SplashScreen> {
         });
       }
     }
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, AppRouter.onboarding);
+    _isProgressDone=true;
+    _navigateBasedOnState();
+
+
+  }
+  void _navigateBasedOnState() async{
+    final authState = context.read<AuthCubit>().state;
+    if (!_isProgressDone || authState is AuthInitial || authState is AuthLoading) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final bool seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
+    if(!mounted) return;
+    if (authState is AuthUnAuthenticated) {
+      if (seenOnboarding) {
+        Navigator.pushReplacementNamed(context, AppRouter.login);
+      } else {
+        Navigator.pushReplacementNamed(context, AppRouter.onboarding);
+      }
+    } else if (authState is AuthenticatedClient) {
+      Navigator.pushReplacementNamed(context, AppRouter.clientHome);
+    } else if (authState is AuthenticatedVendor) {
+      Navigator.pushReplacementNamed(context, AppRouter.vendorHome);
+    } else if (authState is AuthEmailNotVerified) {
+      Navigator.pushReplacementNamed(context, AppRouter.login);
     }
   }
 
@@ -41,15 +67,8 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: const Color(0xFF0D1117),
       body: BlocListener<AuthCubit,AuthState>(
         listener: (context,state){
-          if (state is AuthUnAuthenticated) {
-            Navigator.pushReplacementNamed(context, AppRouter.onboarding);
-          } else if (state is AuthenticatedClient) {
-            // Navigator.pushReplacementNamed(context, '/clientHome');
-          } else if (state is AuthenticatedVendor) {
-             Navigator.pushReplacementNamed(context, AppRouter.vendorHome);
-          } else if (state is AuthEmailNotVerified) {
-            Navigator.pushReplacementNamed(context, AppRouter.login);
-          }
+
+          _navigateBasedOnState();
         },
         child: SafeArea(
           child: Padding(

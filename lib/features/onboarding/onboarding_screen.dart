@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace_app/core/routing/app_router.dart';
+import 'package:marketplace_app/core/theme/app_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -11,11 +13,19 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int currentIndex = 0;
+  Future<void> _completeOnboarding() async{
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seen_onboarding', true);
+
+    if(mounted){
+      Navigator.pushReplacementNamed(context, AppRouter.login);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -24,16 +34,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(
-                      context,
-                      AppRouter.login,
-                    );
-                  },
+                  onPressed: _completeOnboarding,
                   child: const Text(
                     'Skip',
                     style: TextStyle(
-                        color: Colors.grey,
+                        color: AppColors.secondaryText,
                         fontSize: 16,
                         fontWeight: FontWeight.bold),
                   ),
@@ -60,13 +65,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87),
+                              color: Colors.white),
                         ),
                         const SizedBox(height: 16),
                         const Text(
                           'Explore stores from\ndifferent sellers.',
                           style: TextStyle(
-                              fontSize: 16, color: Colors.grey, height: 1.5),
+                              fontSize: 16, color: AppColors.secondaryText, height: 1.5),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -83,13 +88,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87),
+                              color: Colors.white),
                         ),
                         const SizedBox(height: 16),
                         const Text(
                           'Browse categories and \nfind products quickly',
                           style: TextStyle(
-                              fontSize: 16, color: Colors.grey, height: 1.5),
+                              fontSize: 16, color: AppColors.secondaryText, height: 1.5),
                           textAlign: TextAlign.center,
                         )
                       ],
@@ -106,13 +111,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87),
+                              color: Colors.white),
                         ),
                         const SizedBox(height: 16),
                         const Text(
                           'Create your own store and \nmanage your products',
                           style: TextStyle(
-                              fontSize: 16, color: Colors.grey, height: 1.5),
+                              fontSize: 16, color: AppColors.secondaryText, height: 1.5),
                           textAlign: TextAlign.center,
                         )
                       ],
@@ -132,8 +137,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     width: currentIndex == index ? 24 : 8,
                     decoration: BoxDecoration(
                       color: currentIndex == index
-                          ? const Color(0xFF4A72D4)
-                          : Colors.grey.shade300,
+                          ? AppColors.primaryBlue
+                          : AppColors.divider,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -148,10 +153,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (currentIndex == 2) {
-                      Navigator.pushReplacementNamed(
-                        context,
-                        AppRouter.login,
-                      );
+                      _completeOnboarding();
                     } else {
                       _controller.nextPage(
                         duration: const Duration(milliseconds: 300),
@@ -160,7 +162,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A72D4),
+                    backgroundColor: AppColors.primaryBlue,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),

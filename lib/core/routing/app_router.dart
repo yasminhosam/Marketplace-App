@@ -4,6 +4,7 @@ import 'package:marketplace_app/core/services/category_service.dart';
 import 'package:marketplace_app/features/auth/login/login_screen.dart';
 import 'package:marketplace_app/features/client_home/cubit/client_home_cubit.dart';
 import 'package:marketplace_app/features/client_home/ui/client_home_screen.dart';
+import 'package:marketplace_app/features/favorites/ui/favorites_screen.dart';
 import 'package:marketplace_app/features/splash/splash_screen.dart';
 import 'package:marketplace_app/features/onboarding/onboarding_screen.dart';
 import 'package:marketplace_app/features/auth/register/register_screen.dart';
@@ -26,6 +27,8 @@ class AppRouter {
   static const String vendorProducts = '/vendor-products';
   static const String vendorHome = '/vendor_home';
   static const String clientHome = '/client_home';
+  static const String clientFavorite='/client_favorite';
+  static const String clientOrders='/client_orders';
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -59,6 +62,13 @@ class AppRouter {
             create: (context) => VendorCubit()..loadVendorHome(),
             child: const VendorHome(),
           ),
+        );
+      case clientFavorite:
+        return MaterialPageRoute(
+            builder: (_)=> const FavoritesScreen());
+      case clientOrders:
+        return MaterialPageRoute(
+            builder: (_) => const CustomerOrdersScreen()
         );
       default:
         return MaterialPageRoute(

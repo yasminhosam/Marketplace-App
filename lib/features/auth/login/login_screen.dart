@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
             _showSnackBar(state.message, color: Colors.red);
           } else if (state is AuthEmailNotVerified) {
             _showSnackBar(
-              'Please verify your email before logging in.',
+              'Please verify your email before logging in. Check your inbox.',
               color: Colors.orange,
             );
           }else if(state is AuthPasswordResetSent){

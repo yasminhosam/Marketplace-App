@@ -82,7 +82,7 @@ class EmptyCart extends StatelessWidget {
       ),
     );
   }
-};
+}
 
 
   Widget _buildButton({

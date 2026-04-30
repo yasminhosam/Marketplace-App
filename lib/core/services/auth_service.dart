@@ -20,12 +20,12 @@ class AuthService {
       User? user = userCredential.user;
       if (user == null) return null;
 
-      /* 
+
       if (!user.emailVerified) {
-        await user.sendEmailVerification();
-        return null; // cubit will emit AuthEmailNotVerified
+        await firebaseAuth.signOut();
+        return null;
       }
-      */
+
 
       return await getUser(user.uid);
     } on FirebaseAuthException catch (e) {
@@ -66,6 +66,7 @@ class AuthService {
 
       // Send verification email
       await user.sendEmailVerification();
+      await firebaseAuth.signOut();
 
       return newUser;
     } on FirebaseAuthException catch (e) {

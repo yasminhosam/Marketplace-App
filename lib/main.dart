@@ -12,6 +12,8 @@ import 'package:marketplace_app/core/services/auth_service.dart';
 
 import 'package:marketplace_app/features/auth/cubit/auth_cubit.dart';
 
+import 'core/services/favorites_service.dart';
+import 'features/favorites/cubit/favorites_cubit.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -24,11 +26,18 @@ void main() async {
   );
 
   runApp(
-    BlocProvider(
-      create: (context) => AuthCubit(AuthService()),
-
-      child: const MyApp(),
-    ),
+    MultiBlocProvider(
+        providers:[
+          BlocProvider(
+              create: (context) => AuthCubit(AuthService())
+          ),
+          BlocProvider(
+              create: (context) => FavoritesCubit(
+                  favoritesService: FavoritesService()
+              )..loadFavorites(),
+          ),
+        ],
+        child: const MyApp())
   );
 }
 

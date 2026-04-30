@@ -57,8 +57,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       _emitAuthenticated(user);
     } catch (e) {
-      //  If anything crashes, stop the spinner and show the error.
-      emit(AuthError("Login failed. Please try again. "));
+      emit(AuthError(e.toString().replaceFirst('Exception: ', '')));
       log("Login failed $e",name: "AuthCubit");
     }
   }
@@ -91,8 +90,8 @@ class AuthCubit extends Cubit<AuthState> {
 
       emit(AuthEmailNotVerified());
     } catch (e) {
-      emit(AuthError("Registration failed. Please try again."));
-     log("Register failed $e",name: "AuthCubit");
+      emit(AuthError(e.toString().replaceFirst('Exception: ', '')));
+      log("Register failed $e",name: "AuthCubit");
     }
   }
 

@@ -7,6 +7,12 @@ import 'package:marketplace_app/core/services/product_service.dart';
 import 'package:marketplace_app/core/theme/app_colors.dart';
 import 'package:marketplace_app/features/client_home/cubit/client_home_cubit.dart';
 import 'package:marketplace_app/features/client_home/cubit/client_home_state.dart';
+import 'package:marketplace_app/features/favorites/cubit/favorites_cubit.dart';
+import 'package:marketplace_app/features/favorites/cubit/favorites_state.dart';
+
+// تأكد من تعديل هذا المسار ليتطابق مع مكان ملف AppRouter عندك
+import 'package:marketplace_app/core/routing/app_router.dart';
+
 import '../../cart/main_cart/ui/main_cart_ui.dart';
 
 class ClientHomeScreen extends StatefulWidget {
@@ -17,7 +23,6 @@ class ClientHomeScreen extends StatefulWidget {
 }
 
 class _ClientHomeScreenState extends State<ClientHomeScreen> {
-
   int _selectedIndex = 0;
 
   @override
@@ -38,21 +43,21 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               Expanded(child: _buildSearchBar()),
               const SizedBox(width: 12),
               Container(
-                decoration: const BoxDecoration(
-                  color: AppColors.inputFill,
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MainCart(),
-                      ),
-                    );
-                  },
-                )
+                  decoration: const BoxDecoration(
+                    color: AppColors.inputFill,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MainCart(),
+                        ),
+                      );
+                    },
+                  )
               ),
             ],
           ),
@@ -89,7 +94,6 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             return const SizedBox.shrink();
           },
         ),
-
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: const Color(0xFF13161E),
           type: BottomNavigationBarType.fixed,
@@ -101,6 +105,21 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             setState(() {
               _selectedIndex = index;
             });
+
+
+            if (index == 1) {
+              Navigator.pushNamed(context, AppRouter.clientFavorite).then((_) {
+                setState(() {
+                  _selectedIndex = 0;
+                });
+              });
+            } else if (index == 2) {
+              Navigator.pushNamed(context, AppRouter.clientOrders).then((_) {
+                setState(() {
+                  _selectedIndex = 0;
+                });
+              });
+            }
           },
           items: const [
             BottomNavigationBarItem(
@@ -127,7 +146,6 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       ),
     );
   }
-
 
   Widget _buildSearchBar() {
     return Container(
@@ -258,7 +276,6 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Expanded(
             child: Stack(
               fit: StackFit.expand,
@@ -276,22 +293,30 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: GestureDetector(
-                    onTap: () {
 
+                  child: BlocBuilder<FavoritesCubit, FavoritesState>(
+                    builder: (context, state) {
+                      final isFavorite = context.read<FavoritesCubit>().isProductFavorite(product.id);
+
+                      return GestureDetector(
+                        onTap: () {
+
+                          context.read<FavoritesCubit>().toggleFavorite(product);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: isFavorite ? Colors.redAccent : Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      );
                     },
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.favorite_border,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
                   ),
                 ),
               ],
@@ -324,7 +349,6 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                         fontSize: 16,
                       ),
                     ),
-
                     if (product.quantity == 1)
                       const Text(
                         "1 left",
