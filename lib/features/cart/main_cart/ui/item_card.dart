@@ -21,7 +21,7 @@ class ItemCard extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
 
     return Card(
-      color: const Color(0xff19102C),
+      color: const Color(0xFF1E212B),
       elevation: 4,
       margin: EdgeInsets.symmetric(horizontal: width * 0.03, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -32,16 +32,16 @@ class ItemCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                item.imageUrl,
+              child: Container(
                 width: 90,
                 height: 90,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
+                color: const Color(0xFF1E212B),
+                child: Image.network(
+                  item.imageUrl,
                   width: 90,
                   height: 90,
-                  color: Colors.grey[800],
-                  child: const Icon(Icons.broken_image, color: Colors.white),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.white),
                 ),
               ),
             ),
@@ -73,7 +73,7 @@ class ItemCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     "Sold by: ${item.storeName}",
-                    style: const TextStyle(color: Color(0xff7F00FF), fontSize: 11, fontWeight: FontWeight.w500),
+                    style: const TextStyle(color: Color(0xFF1A65FF), fontSize: 11, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 8),
                   Text(

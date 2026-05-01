@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:marketplace_app/core/models/order_model.dart';
+import 'package:marketplace_app/core/services/cart_service.dart';
 import 'vendor_orders_state.dart';
 
 class VendorOrdersCubit extends Cubit<VendorOrdersState> {
@@ -25,6 +26,22 @@ class VendorOrdersCubit extends Cubit<VendorOrdersState> {
     }, onError: (e) {
       emit(VendorOrdersError(e.toString()));
     });
+  }
+
+  Future<void> deleteOrder(String orderId) async {
+    final currentState = state;
+    if (currentState is VendorOrdersLoaded) {
+      try {
+        final order = currentState.orders.firstWhere((o) => o.id == orderId);
+        await CartService().deleteOrder(
+          orderId: orderId,
+          clientId: order.clientId,
+          vendorId: order.vendorId,
+        );
+      } catch (e) {
+        emit(VendorOrdersError(e.toString()));
+      }
+    }
   }
 
   @override

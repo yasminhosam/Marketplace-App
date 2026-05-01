@@ -21,6 +21,11 @@ class VendorProfileScreen extends StatefulWidget {
 class _VendorProfileScreenState extends State<VendorProfileScreen> {
   bool _isUploading = false;
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   Future<void> _pickAndUploadImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -75,47 +80,51 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
 
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff101D36),
-        title: Text(
-          "Edit $fieldName",
-          style: const TextStyle(color: Colors.white),
-        ),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: "Enter $fieldName",
-            hintStyle: const TextStyle(color: Colors.white30),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xff135EF3)),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xff101D36),
+            title: Text(
+              "Edit $fieldName",
+              style: const TextStyle(color: Colors.white),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                await FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(widget.user.uid)
-                    .update({dbKey: controller.text.trim()});
-                if (context.mounted) Navigator.pop(context);
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(e.toString())));
-                }
-              }
-            },
-            child: const Text("Save"),
-          ),
-        ],
+            content: TextField(
+              controller: controller,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Enter $fieldName",
+                hintStyle: const TextStyle(color: Colors.white30),
+                enabledBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xff135EF3)),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(widget.user.uid)
+                        .update({dbKey: controller.text.trim()});
+                    if (context.mounted) Navigator.pop(context);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(e.toString())));
+                    }
+                  }
+                },
+                child: const Text("Save"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -245,17 +254,19 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
               labelColor,
               "storeName",
             ),
+            _buildEditableField(
+              context,
+              "ADDRESS",
+              widget.user.address ?? "Not Set",
+              FontAwesomeIcons.locationDot,
+              cardColor,
+              labelColor,
+              "address",
+            ),
             _buildInfoField(
               "EMAIL ADDRESS",
               widget.user.email,
               Icons.mail_outline,
-              cardColor,
-              labelColor,
-            ),
-            _buildInfoField(
-              "CATEGORY",
-              widget.user.category ?? "General",
-              FontAwesomeIcons.layerGroup,
               cardColor,
               labelColor,
             ),
