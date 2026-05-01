@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marketplace_app/core/services/category_service.dart';
 import 'package:marketplace_app/features/auth/login/login_screen.dart';
 import 'package:marketplace_app/features/client_home/ui/client_home_screen.dart';
+import 'package:marketplace_app/features/client_home/ui/client_profile_screen.dart';
 import 'package:marketplace_app/features/favorites/ui/favorites_screen.dart';
 import 'package:marketplace_app/features/splash/splash_screen.dart';
 import 'package:marketplace_app/features/onboarding/onboarding_screen.dart';
@@ -26,6 +27,7 @@ class AppRouter {
   static const String clientHome = '/client_home';
   static const String clientFavorite='/client_favorite';
   static const String clientOrders='/client_orders';
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:

@@ -135,4 +135,36 @@ class CartService {
       throw Exception("Failed to delete order: $e");
     }
   }
+  Future<void> removeFromCart({
+    required String clientId,
+    required String productId,
+  }) async {
+    try {
+      await _firestore
+          .collection('carts')
+          .doc(clientId)
+          .collection('items')
+          .doc(productId)
+          .delete();
+    } catch (e) {
+      throw Exception("Failed to remove from cart: $e");
+    }
+  }
+  Future<bool> isProductInCart({
+    required String clientId,
+    required String productId,
+  }) async {
+    try {
+      final doc = await _firestore
+          .collection('carts')
+          .doc(clientId)
+          .collection('items')
+          .doc(productId)
+          .get();
+      return doc.exists;
+    } catch (e) {
+      return false;
+    }
+  }
+
 }

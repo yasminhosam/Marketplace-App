@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:marketplace_app/core/models/product_model.dart';
@@ -188,6 +189,29 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       color: isOutOfStock ? Colors.redAccent : Colors.grey,
                       fontSize: 14,
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E212B),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.storefront, color: Color(0xFF1A65FF), size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        // Look how clean this is now!
+                        widget.product.storeName,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   Text(

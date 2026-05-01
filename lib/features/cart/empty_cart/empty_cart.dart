@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:marketplace_app/core/routing/app_router.dart';
 
 import '../../client_home/ui/client_home_screen.dart';
 
@@ -75,7 +76,9 @@ class EmptyCart extends StatelessWidget {
             _buildButton(
               text: "View My Wishist",
               width: width,
-              onTap: () {},
+              onTap: () {
+                Navigator.pushReplacementNamed(context, AppRouter.clientFavorite);
+              },
             ),
           ],
         ),

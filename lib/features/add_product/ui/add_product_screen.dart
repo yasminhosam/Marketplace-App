@@ -32,6 +32,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final Color inputColor = const Color(0xFF1E212B);
   final Color primaryBlue = const Color(0xFF1A65FF);
 
+  bool _hasImageError=false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -73,6 +75,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               const SectionTitle(title: 'Product Image'),
               const SizedBox(height: 12),
               ImagePickerBox(
+                hasError:_hasImageError ,
                 isPrimary: true,
                 inputColor: inputColor,
                 primaryColor: primaryBlue,
@@ -80,9 +83,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 onImagePicked: (file){
                   setState(() {
                     _selectedImageFile=file;
+                    _hasImageError=false;
                   });
                 },
               ),
+              if(_hasImageError)
+                const Padding(
+                    padding: EdgeInsets.only(top: 8.0,left:16.0),
+                  child: Text(
+                      'Product image is required',
+                    style: TextStyle(color: Colors.redAccent,fontSize: 12),
+                  ),
+                ),
               const SizedBox(height: 24),
 
               const SectionTitle(title: 'Product Name'),
@@ -145,11 +157,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         CustomTextField(
                           controller: _priceController,
                           hint: '0.00',
-                          keyboardType: TextInputType.number,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true,signed: false),
                           fillColor: inputColor,
                           validator: (value) {
                             if (value == null || value.isEmpty) return 'Price is required';
-                            if (double.tryParse(value) == null) return 'Enter a valid number';
+                            final price=double.tryParse(value);
+                            if (price == null) return 'Enter a valid number';
+                            if(price<=0 )return 'Price must be greater than zero';
                             return null;
                           },
                         ),
@@ -166,11 +180,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         CustomTextField(
                           controller: _quantityController,
                           hint: '1',
-                          keyboardType: TextInputType.number,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true,signed: false),
                           fillColor: inputColor,
                           validator: (value) {
                             if (value == null || value.isEmpty) return 'Quantity required';
-                            if (int.tryParse(value) == null) return 'Enter a whole number';
+                            final quantity = int.tryParse(value);
+                            if (quantity == null) return 'Enter a valid number';
+                            if(quantity <= 0) return 'Quantity must be greater than zero';
                             return null;
                           },
                         ),
@@ -234,6 +250,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   ),
                 ),
                 onPressed: () {
+                  if(_selectedImageFile == null){
+                    setState(() {
+                      _hasImageError=true;
+                    });
+                  }
 
                   if (_formKey.currentState!.validate()) {
 

@@ -67,84 +67,93 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         productService: ProductService(),
         categoryService: CategoryService(),
       )..loadHomeData(),
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: _selectedIndex == 0 ? AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          toolbarHeight: 70,
-          title: Row(
-            children: [
-              Expanded(child: _buildSearchBar()),
-              const SizedBox(width: 12),
-              Container(
-                  decoration: const BoxDecoration(
-                    color: AppColors.inputFill,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MainCart(),
-                        ),
-                      );
-                    },
-                  )
+      child: PopScope(
+        canPop: _selectedIndex==0,
+          onPopInvoked: (bool didPop){
+          if(didPop) return;
+          setState(() {
+            _selectedIndex=0;
+          });
+          },
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: _selectedIndex == 0 ? AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            toolbarHeight: 70,
+            title: Row(
+              children: [
+                Expanded(child: _buildSearchBar()),
+                const SizedBox(width: 12),
+                Container(
+                    decoration: const BoxDecoration(
+                      color: AppColors.inputFill,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MainCart(),
+                          ),
+                        );
+                      },
+                    )
+                ),
+              ],
+            ),
+          ) : null,
+          body: _buildBody(),
+          bottomNavigationBar: BottomNavigationBar(
+            backgroundColor: const Color(0xFF13161E),
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: const Color(0xFF1A65FF),
+            unselectedItemColor: Colors.grey.shade600,
+            showUnselectedLabels: true,
+            currentIndex: _selectedIndex,
+            onTap: (index) {
+              if (index == 1) {
+                Navigator.pushNamed(context, AppRouter.clientFavorite).then((_) {
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
+                });
+              } else if (index == 2) {
+                Navigator.pushNamed(context, AppRouter.clientOrders).then((_) {
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
+                });
+              } else {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              }
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_filled),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.favorite_border),
+                activeIcon: Icon(Icons.favorite),
+                label: 'Favorites',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.receipt_long_outlined),
+                activeIcon: Icon(Icons.receipt_long),
+                label: 'Orders',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile',
               ),
             ],
           ),
-        ) : null,
-        body: _buildBody(),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: const Color(0xFF13161E),
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF1A65FF),
-          unselectedItemColor: Colors.grey.shade600,
-          showUnselectedLabels: true,
-          currentIndex: _selectedIndex,
-          onTap: (index) {
-            if (index == 1) {
-              Navigator.pushNamed(context, AppRouter.clientFavorite).then((_) {
-                setState(() {
-                  _selectedIndex = 0;
-                });
-              });
-            } else if (index == 2) {
-              Navigator.pushNamed(context, AppRouter.clientOrders).then((_) {
-                setState(() {
-                  _selectedIndex = 0;
-                });
-              });
-            } else {
-              setState(() {
-                _selectedIndex = index;
-              });
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_filled),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_border),
-              activeIcon: Icon(Icons.favorite),
-              label: 'Favorites',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              activeIcon: Icon(Icons.receipt_long),
-              label: 'Orders',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-          ],
         ),
       ),
     );

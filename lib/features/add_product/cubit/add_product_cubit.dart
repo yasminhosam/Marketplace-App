@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marketplace_app/core/models/category_model.dart';
@@ -34,7 +35,16 @@ class AddProductCubit extends Cubit<AddProductState> {
   }) async {
     emit(AddProductLoading());
     final vendorId = _firebaseAuth.currentUser?.uid;
+
     try {
+      String storeName ="Unknown Store";
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users')
+      .doc(vendorId).get();
+      if (userDoc.exists) {
+        storeName = userDoc.data().toString().contains('storeName')
+            ? userDoc.get('storeName') ?? "Unknown Store"
+            : "Unknown Store";
+      }
       String finalImageUrl ='';
       if(imageFile !=null){
         final uploadedUrl = await _cloudinaryService.uploadImageToCloudinary(imageFile);
@@ -49,6 +59,7 @@ class AddProductCubit extends Cubit<AddProductState> {
         final newProduct = ProductModel(
           id: '',
           vendorId: vendorId,
+          storeName: storeName ,
           name: name,
           categoryId: categoryId,
           imageUrl: finalImageUrl,

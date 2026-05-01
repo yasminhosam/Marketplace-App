@@ -100,10 +100,26 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
           ElevatedButton(
             onPressed: () async {
               try {
-                await FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(widget.user.uid)
-                    .update({dbKey: controller.text.trim()});
+                final firestore =FirebaseFirestore.instance;
+                final newValue=controller.text.trim();
+                if(dbKey == 'storeName'){
+                  final batch =firestore.batch();
+                  final userRef=firestore.collection('users')
+                  .doc(widget.user.uid);
+                  batch.update(userRef, {dbKey:newValue});
+                  final productsQuery =await firestore
+                  .collection('products')
+                  .where('vendorId',isEqualTo: widget.user.uid).get();
+                  for(var doc in productsQuery.docs){
+                    batch.update(doc.reference, {'storeName':newValue});
+                  }
+                  await batch.commit();
+                } else{
+                  await firestore
+                      .collection('users')
+                      .doc(widget.user.uid)
+                      .update({dbKey: newValue});
+                }
                 if (context.mounted) Navigator.pop(context);
               } catch (e) {
                 if (context.mounted) {
@@ -229,24 +245,24 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
                   labelColor,
                   "name",
                 ),
-                _buildEditableField(
-                  context,
-                  "PHONE NUMBER",
-                  user.phoneNumber ?? "Not Set",
-                  FontAwesomeIcons.phone,
-                  cardColor,
-                  labelColor,
-                  "phoneNumber",
-                ),
-                _buildEditableField(
-                  context,
-                  "ADDRESS",
-                  user.address ?? "Not Set",
-                  FontAwesomeIcons.locationDot,
-                  cardColor,
-                  labelColor,
-                  "address",
-                ),
+                // _buildEditableField(
+                //   context,
+                //   "PHONE NUMBER",
+                //   user.phoneNumber ?? "Not Set",
+                //   FontAwesomeIcons.phone,
+                //   cardColor,
+                //   labelColor,
+                //   "phoneNumber",
+                // ),
+                // _buildEditableField(
+                //   context,
+                //   "ADDRESS",
+                //   user.address ?? "Not Set",
+                //   FontAwesomeIcons.locationDot,
+                //   cardColor,
+                //   labelColor,
+                //   "address",
+                // ),
                 _buildInfoField(
                   "EMAIL ADDRESS",
                   user.email,

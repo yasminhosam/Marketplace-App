@@ -134,15 +134,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         icon: Icons.work_outline,
                         controller: _storeNameController
                     ),
-
-                    const SizedBox(height: 20),
-                    _buildLabel("Short Bio / Description"),
-                    _buildTextField(
-                        hint: "Briefly describe what you offer...",
-                        icon: Icons.description_outlined,
-                        controller: _storeDescController,
-                        maxLength: 200),
-                    const SizedBox(height: 20),
+                    //
+                    // const SizedBox(height: 20),
+                    // _buildLabel("Short Bio / Description"),
+                    // _buildTextField(
+                    //     hint: "Briefly describe what you offer...",
+                    //     icon: Icons.description_outlined,
+                    //     controller: _storeDescController,
+                    //     maxLength: 200),
+                    // const SizedBox(height: 20),
                   ],
 
                   _buildLabel("Password"),
@@ -222,16 +222,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
 
                   const SizedBox(height: 40),
-                  // const Center(
-                  //   child: Text(
-                  //     "STUDENT MARKETPLACE APP",
-                  //     style: TextStyle(
-                  //         color: Colors.white12,
-                  //         fontSize: 12,
-                  //         letterSpacing: 1.5,
-                  //         fontWeight: FontWeight.bold),
-                  //   ),
-                  // ),
                   const SizedBox(height: 20),
                 ],
               ),

@@ -104,6 +104,15 @@ class AuthService {
 
   Future<void> resetPassword({required String email}) async {
     try {
+      // final QuerySnapshot userQuery = await firestore
+      // .collection("users")
+      // .where("email",isEqualTo: email)
+      // .limit(1)
+      // .get();
+      //
+      // if(userQuery.docs.isEmpty){
+      //   throw Exception("No account found with this email");
+      // }
       await firebaseAuth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
       throw Exception(e.message);
