@@ -4,8 +4,8 @@ class UserModel {
   final String email;
   final String role; // 'client' or 'vendor'
   final String? phoneNumber;
-  final String? category;
   final String? profileImageUrl;
+  final String? address;
 
   // Vendor specific fields (can be null if the user is a client)
   final String? storeName;
@@ -17,8 +17,8 @@ class UserModel {
     required this.email,
     required this.role,
     this.phoneNumber,
-    this.category,
     this.profileImageUrl,
+    this.address,
     this.storeName,
     this.storeDescription,
   });
@@ -31,8 +31,8 @@ class UserModel {
       email: map['email'] ?? '',
       role: map['role'] ?? 'client',
       phoneNumber: map['phoneNumber'],
-      category: map['category'],
       profileImageUrl: map['profileImageUrl'],
+      address: map['address'],
       storeName: map['storeName'],
       storeDescription: map['storeDescription'],
     );
@@ -46,8 +46,8 @@ class UserModel {
       'email': email,
       'role': role,
       'phoneNumber': phoneNumber,
-      'category': category,
       'profileImageUrl': profileImageUrl,
+      'address': address,
       'storeName': storeName,
       'storeDescription': storeDescription,
     };

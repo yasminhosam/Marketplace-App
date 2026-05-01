@@ -19,9 +19,9 @@ class MainCart extends StatelessWidget {
     return BlocProvider(
       create: (_) => CartCubit()..fetchCart(user.uid),
       child: Scaffold(
-        backgroundColor: const Color(0xff161023),
+        backgroundColor: const Color(0xFF101622),
         appBar:AppBar(
-          backgroundColor: const Color(0xff161022),
+          backgroundColor: const Color(0xFF101622),
           elevation: 0,
           centerTitle: true,
           title: const Text(
@@ -36,7 +36,7 @@ class MainCart extends StatelessWidget {
               },
               child: Container(
                 decoration: const BoxDecoration(
-                  color: Color(0xff1B0F36),
+                  color: Color(0xFF1E212B),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

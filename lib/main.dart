@@ -27,17 +27,16 @@ void main() async {
 
   runApp(
     MultiBlocProvider(
-        providers:[
-          BlocProvider(
-              create: (context) => AuthCubit(AuthService())
-          ),
-          BlocProvider(
-              create: (context) => FavoritesCubit(
-                  favoritesService: FavoritesService()
-              )..loadFavorites(),
-          ),
-        ],
-        child: const MyApp())
+      providers: [
+        BlocProvider(create: (context) => AuthCubit(AuthService())),
+        BlocProvider(
+          create: (context) =>
+              FavoritesCubit(favoritesService: FavoritesService())
+                ..loadFavorites(),
+        ),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 

@@ -5,7 +5,7 @@ import 'package:marketplace_app/features/favorites/cubit/favorites_cubit.dart';
 import 'package:marketplace_app/features/favorites/cubit/favorites_state.dart';
 
 class FavoritesScreen extends StatelessWidget {
-  const FavoritesScreen({Key? key}) : super(key: key);
+  const FavoritesScreen({super.key});
 
   // الألوان المطلوبة في التصميم
   static const Color bgColor = Color(0xFF0D1117);

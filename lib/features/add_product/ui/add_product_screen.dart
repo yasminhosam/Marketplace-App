@@ -112,7 +112,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                   if (categories.isEmpty && state is AddProductCategoriesFailure) {
                     return Text(
-                      (state as AddProductCategoriesFailure).errorMessage,
+                      (state).errorMessage,
                       style: const TextStyle(color: Colors.red),
                     );
                   }

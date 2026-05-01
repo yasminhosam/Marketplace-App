@@ -20,14 +20,6 @@ class CustomerOrdersScreen
 class _CustomerOrdersScreenState
     extends
         State<CustomerOrdersScreen> {
-  final List<String> _tabs = [
-    'All',
-    'New',
-    'Processing',
-    'Delivered',
-  ];
-  String _selectedTab = 'All';
-
   @override
   Widget build(BuildContext context) {
     final clientId =
@@ -54,7 +46,7 @@ class _CustomerOrdersScreenState
           elevation: 0,
           centerTitle: true,
           title: const Text(
-            'Orders',
+            'My Orders',
             style: TextStyle(
               color: Colors.white,
               fontWeight:
@@ -63,86 +55,7 @@ class _CustomerOrdersScreenState
             ),
           ),
         ),
-        body: Column(
-          children: [
-            Container(
-              height: 50,
-              decoration:
-                  const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Color(
-                          0xFF1E2A3A,
-                        ),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-              child: ListView.builder(
-                scrollDirection:
-                    Axis.horizontal,
-                itemCount: _tabs.length,
-                itemBuilder: (context, index) {
-                  final tab =
-                      _tabs[index];
-                  final isSelected =
-                      tab ==
-                      _selectedTab;
-                  return GestureDetector(
-                    onTap: () => setState(
-                      () =>
-                          _selectedTab =
-                              tab,
-                    ),
-                    child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(
-                            horizontal:
-                                20,
-                          ),
-                      alignment:
-                          Alignment
-                              .center,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color:
-                                isSelected
-                                ? const Color(
-                                    0xff135EF3,
-                                  )
-                                : Colors
-                                      .transparent,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      child: Text(
-                        tab,
-                        style: TextStyle(
-                          color:
-                              isSelected
-                              ? Colors
-                                    .white
-                              : const Color(
-                                  0xFF8B9CB6,
-                                ),
-                          fontWeight:
-                              isSelected
-                              ? FontWeight
-                                    .w600
-                              : FontWeight
-                                    .w400,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Expanded(
-              child:
-                  BlocBuilder<
+        body: BlocBuilder<
                     CustomerOrdersCubit,
                     CustomerOrdersState
                   >(
@@ -169,24 +82,9 @@ class _CustomerOrdersScreenState
                         );
                       } else if (state
                           is CustomerOrdersLoaded) {
-                        final filteredOrders =
-                            _selectedTab ==
-                                'All'
-                            ? state
-                                  .orders
-                            : state
-                                  .orders
-                                  .where(
-                                    (
-                                      o,
-                                    ) =>
-                                        o.status.toLowerCase() ==
-                                        _selectedTab.toLowerCase(),
-                                  )
-                                  .toList();
+                        final orders = state.orders;
 
-                        if (filteredOrders
-                            .isEmpty) {
+                        if (orders.isEmpty) {
                           return const Center(
                             child: Text(
                               "No orders found",
@@ -205,8 +103,7 @@ class _CustomerOrdersScreenState
                                 16,
                               ),
                           itemCount:
-                              filteredOrders
-                                  .length,
+                              orders.length,
                           separatorBuilder:
                               (
                                 _,
@@ -221,16 +118,13 @@ class _CustomerOrdersScreenState
                                 index,
                               ) => OrderCard(
                                 order:
-                                    filteredOrders[index],
+                                    orders[index],
                               ),
                         );
                       }
                       return const SizedBox.shrink();
                     },
                   ),
-            ),
-          ],
-        ),
       ),
     );
   }

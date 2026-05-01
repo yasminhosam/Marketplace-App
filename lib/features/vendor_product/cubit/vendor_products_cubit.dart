@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marketplace_app/core/services/product_service.dart';
 import 'package:marketplace_app/features/vendor_product/cubit/vendor_products_state.dart';
-import '../../../core/models/product_model.dart';
 import '../../../core/services/category_service.dart';
 
 class VendorProductsCubit extends Cubit<VendorProductsState>{
