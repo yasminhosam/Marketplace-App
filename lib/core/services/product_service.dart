@@ -10,7 +10,6 @@ class ProductService {
 
       final productMap=product.toMap();
       productMap['id']=productRef.id;
-      // Add createdAt for stats calculation
       productMap['createdAt'] = FieldValue.serverTimestamp();
 
       await productRef.set(productMap);
@@ -41,5 +40,22 @@ class ProductService {
             }).toList();
       });
       
-  } 
+  }
+  Future<void> updateProduct(ProductModel product) async {
+    try {
+      await _firestore
+          .collection('products')
+          .doc(product.id)
+          .update(product.toMap());
+    } catch (e) {
+      throw Exception('Failed to update product: $e');
+    }
+  }
+  Future<void> deleteProduct(String productId) async {
+    try {
+      await _firestore.collection('products').doc(productId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete product: $e');
+    }
+  }
 }

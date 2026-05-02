@@ -32,7 +32,7 @@ class MainCart extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.pop(context); // دي اللي بترجعك للصفحة السابقة
+                Navigator.pop(context);
               },
               child: Container(
                 decoration: const BoxDecoration(

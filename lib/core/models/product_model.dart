@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ProductModel {
   final String id; // Firestore document ID
-  final String vendorId;// Links the product to the vendor who created it
+  final String vendorId;
   final String storeName;
   final String name;
   final String categoryId;
@@ -8,6 +10,7 @@ class ProductModel {
   final double price;
   final int quantity;
   final String description;
+  final dynamic createdAt;
 
   ProductModel({
     required this.id,
@@ -19,6 +22,7 @@ class ProductModel {
     required this.price,
     required this.quantity,
     required this.description,
+    this.createdAt,
   });
 
   factory ProductModel.fromMap(Map<String, dynamic> map, String documentId) {
@@ -31,7 +35,8 @@ class ProductModel {
       imageUrl: map['imageUrl'] ?? '',
       price: (map['price'] ?? 0.0).toDouble(),
       quantity: map['quantity'] ?? 0,
-      description:map['description'] ?? '',
+      description: map['description'] ?? '',
+      createdAt: map['createdAt'],
     );
   }
 
@@ -44,7 +49,8 @@ class ProductModel {
       'imageUrl': imageUrl,
       'price': price,
       'quantity': quantity,
-      'description' :description
+      'description': description,
+      'createdAt': createdAt ?? FieldValue.serverTimestamp(),
     };
   }
 }

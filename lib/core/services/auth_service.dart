@@ -64,7 +64,6 @@ class AuthService {
 
       await firestore.collection("users").doc(user.uid).set(newUser.toMap());
 
-      // Send verification email
       await user.sendEmailVerification();
       await firebaseAuth.signOut();
 
@@ -104,18 +103,16 @@ class AuthService {
 
   Future<void> resetPassword({required String email}) async {
     try {
-      // final QuerySnapshot userQuery = await firestore
-      // .collection("users")
-      // .where("email",isEqualTo: email)
-      // .limit(1)
-      // .get();
-      //
-      // if(userQuery.docs.isEmpty){
-      //   throw Exception("No account found with this email");
-      // }
       await firebaseAuth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
-      throw Exception(e.message);
+      if (e.code == 'user-not-found') {
+        throw Exception("This email is not registered. Please Sign Up first.");
+      } else if (e.code == 'invalid-email') {
+        throw Exception("The email address is badly formatted.");
+      }
+      throw Exception(e.message ?? "An error occurred");
+    } catch (e) {
+      throw Exception("An error occurred. Please try again.");
     }
   }
 }

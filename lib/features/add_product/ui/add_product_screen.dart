@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:marketplace_app/core/models/product_model.dart';
 import '../cubit/add_product_cubit.dart';
 import '../cubit/add_product_state.dart';
 import '../widgets/category_dropdown.dart';
@@ -10,14 +10,14 @@ import '../widgets/image_picker_box.dart';
 import '../widgets/section_title.dart';
 
 class AddProductScreen extends StatefulWidget {
-  const AddProductScreen({super.key});
+  final ProductModel? product;
+  const AddProductScreen({super.key, this.product});
 
   @override
   State<AddProductScreen> createState() => _AddProductScreenState();
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
-
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -32,7 +32,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final Color inputColor = const Color(0xFF1E212B);
   final Color primaryBlue = const Color(0xFF1A65FF);
 
-  bool _hasImageError=false;
+  @override
+  void initState() {
+    super.initState();
+    context.read<AddProductCubit>().fetchCategories();
+
+    if (widget.product != null) {
+      _nameController.text = widget.product!.name;
+      _priceController.text = widget.product!.price.toString();
+      _quantityController.text = widget.product!.quantity.toString();
+      _descriptionController.text = widget.product!.description;
+      _selectedCategoryId = widget.product!.categoryId;
+    }
+  }
 
   @override
   void dispose() {
@@ -42,14 +54,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _descriptionController.dispose();
     super.dispose();
   }
-  @override
-  void initState() {
-    super.initState();
-    context.read<AddProductCubit>().fetchCategories();
-  }
 
   @override
   Widget build(BuildContext context) {
+    final bool isEditMode = widget.product != null;
+
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
@@ -59,9 +68,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Add Product',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        title: Text(
+          isEditMode ? 'Edit Product' : 'Add Product',
+          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -75,24 +84,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
               const SectionTitle(title: 'Product Image'),
               const SizedBox(height: 12),
               ImagePickerBox(
-                hasError:_hasImageError ,
                 isPrimary: true,
                 inputColor: inputColor,
                 primaryColor: primaryBlue,
                 selectedImage: _selectedImageFile,
-                onImagePicked: (file){
+                onImagePicked: (file) {
                   setState(() {
-                    _selectedImageFile=file;
-                    _hasImageError=false;
+                    _selectedImageFile = file;
                   });
                 },
               ),
-              if(_hasImageError)
-                const Padding(
-                    padding: EdgeInsets.only(top: 8.0,left:16.0),
+              if (isEditMode && _selectedImageFile == null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
-                      'Product image is required',
-                    style: TextStyle(color: Colors.redAccent,fontSize: 12),
+                    "Note: Keeping the current product image",
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
                   ),
                 ),
               const SizedBox(height: 24),
@@ -117,30 +124,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
               BlocBuilder<AddProductCubit, AddProductState>(
                 builder: (context, state) {
                   final categories = context.read<AddProductCubit>().cachedCategories;
-
-                  if (categories.isEmpty && state is AddProductCategoriesLoading) {
-                    return const CircularProgressIndicator();
-                  }
-
-                  if (categories.isEmpty && state is AddProductCategoriesFailure) {
-                    return Text(
-                      (state).errorMessage,
-                      style: const TextStyle(color: Colors.red),
-                    );
-                  }
-
-                  if (categories.isNotEmpty) {
-                    return CategoryDropdown(
-                      value: _selectedCategoryId,
-                      categories: categories,
-                      onChanged: (newValue) {
-                        setState(() => _selectedCategoryId = newValue);
-                      },
-                      fillColor: inputColor,
-                    );
-                  }
-
-                  return const CircularProgressIndicator();
+                  return CategoryDropdown(
+                    value: _selectedCategoryId,
+                    categories: categories,
+                    onChanged: (newValue) {
+                      setState(() => _selectedCategoryId = newValue);
+                    },
+                    fillColor: inputColor,
+                  );
                 },
               ),
               const SizedBox(height: 20),
@@ -157,13 +148,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         CustomTextField(
                           controller: _priceController,
                           hint: '0.00',
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true,signed: false),
+                          keyboardType: TextInputType.number,
                           fillColor: inputColor,
                           validator: (value) {
-                            if (value == null || value.isEmpty) return 'Price is required';
-                            final price=double.tryParse(value);
-                            if (price == null) return 'Enter a valid number';
-                            if(price<=0 )return 'Price must be greater than zero';
+                            if (value == null || value.isEmpty) return 'Required';
+                            final price = double.tryParse(value);
+                            if (price == null) return 'Invalid';
+                            if (price <= 0) return 'Must be > 0';
                             return null;
                           },
                         ),
@@ -180,13 +171,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         CustomTextField(
                           controller: _quantityController,
                           hint: '1',
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true,signed: false),
+                          keyboardType: TextInputType.number,
                           fillColor: inputColor,
                           validator: (value) {
-                            if (value == null || value.isEmpty) return 'Quantity required';
-                            final quantity = int.tryParse(value);
-                            if (quantity == null) return 'Enter a valid number';
-                            if(quantity <= 0) return 'Quantity must be greater than zero';
+                            if (value == null || value.isEmpty) return 'Required';
+                            final qty = int.tryParse(value);
+                            if (qty == null) return 'Invalid';
+                            if (qty <= 0) return 'Must be > 0';
                             return null;
                           },
                         ),
@@ -201,7 +192,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _descriptionController,
-                hint: "Tell buyers about your product's\ncondition, size, and unique features...",
+                hint: "Tell buyers about your product...",
                 maxLines: 4,
                 fillColor: inputColor,
                 validator: (value) {
@@ -216,7 +207,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
           ),
         ),
       ),
-
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -224,7 +214,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             listener: (context, state) {
               if (state is AddProductSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Product added successfully!')),
+                  SnackBar(content: Text(isEditMode ? 'Product updated successfully!' : 'Product added successfully!')),
                 );
                 Navigator.pop(context);
               } else if (state is AddProductFailure) {
@@ -235,28 +225,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
             },
             builder: (context, state) {
               if (state is AddProductLoading) {
-                return const SizedBox(
-                  height: 55,
-                  child: Center(child: CircularProgressIndicator()),
-                );
+                return const SizedBox(height: 55, child: Center(child: CircularProgressIndicator()));
               }
 
               return ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryBlue,
                   minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: () {
-                  if(_selectedImageFile == null){
-                    setState(() {
-                      _hasImageError=true;
-                    });
-                  }
-
                   if (_formKey.currentState!.validate()) {
+                    if (!isEditMode && _selectedImageFile == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please select a product image'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
 
                     if (_selectedCategoryId == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -265,23 +253,39 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       return;
                     }
 
-
-                    context.read<AddProductCubit>().saveProduct(
-                      name: _nameController.text,
-                      categoryId: _selectedCategoryId!,
-                      price: double.tryParse(_priceController.text) ?? 0.0,
-                      quantity: int.tryParse(_quantityController.text) ?? 0,
-                      description: _descriptionController.text,
-                      imageFile: _selectedImageFile,
-                    );
+                    if (isEditMode) {
+                      context.read<AddProductCubit>().updateProduct(
+                        productId: widget.product!.id,
+                        name: _nameController.text,
+                        categoryId: _selectedCategoryId!,
+                        price: double.tryParse(_priceController.text) ?? 0.0,
+                        quantity: int.tryParse(_quantityController.text) ?? 0,
+                        description: _descriptionController.text,
+                        imageFile: _selectedImageFile,
+                        existingImageUrl: widget.product!.imageUrl,
+                        existingCreatedAt: widget.product!.createdAt,
+                      );
+                    } else {
+                      context.read<AddProductCubit>().saveProduct(
+                        name: _nameController.text,
+                        categoryId: _selectedCategoryId!,
+                        price: double.tryParse(_priceController.text) ?? 0.0,
+                        quantity: int.tryParse(_quantityController.text) ?? 0,
+                        description: _descriptionController.text,
+                        imageFile: _selectedImageFile,
+                      );
+                    }
                   }
                 },
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.check_circle, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text('Save Product', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text(
+                      isEditMode ? 'Update Product' : 'Save Product',
+                      style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
               );

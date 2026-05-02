@@ -9,7 +9,6 @@ class ImagePickerBox extends StatelessWidget {
   final Color primaryColor;
   final File? selectedImage;
   final ValueChanged<File>? onImagePicked;
-  final bool hasError ;
 
   const ImagePickerBox({
     super.key,
@@ -18,7 +17,6 @@ class ImagePickerBox extends StatelessWidget {
     required this.primaryColor,
     this.selectedImage,
     this.onImagePicked,
-    this.hasError=false
   });
 
   Future<void> _pickImage() async {
@@ -39,9 +37,7 @@ class ImagePickerBox extends StatelessWidget {
         decoration: BoxDecoration(
           color: inputColor,
           borderRadius: BorderRadius.circular(16),
-          border: hasError
-              ? Border.all(color: Colors.redAccent, width: 2)
-              : isPrimary
+          border: isPrimary
               ? Border.all(color: primaryColor.withOpacity(0.5), width: 2)
               : null,
         ),
@@ -53,9 +49,7 @@ class ImagePickerBox extends StatelessWidget {
             : Center(
           child: Icon(
             isPrimary ? Icons.camera_alt : Icons.image,
-            color: hasError
-                ? Colors.redAccent
-                : (isPrimary ? primaryColor : Colors.grey),
+            color: isPrimary ? primaryColor : Colors.grey,
             size: 28,
           ),
         ),
