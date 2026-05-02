@@ -4,14 +4,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:marketplace_app/core/services/category_service.dart';
-import 'package:marketplace_app/core/services/image_service.dart';
 import 'package:marketplace_app/core/services/product_service.dart';
+import 'package:marketplace_app/core/services/image_service.dart';
 import 'package:marketplace_app/features/add_product/cubit/add_product_cubit.dart';
 import 'package:marketplace_app/features/add_product/ui/add_product_screen.dart';
 import 'package:marketplace_app/features/vendor_home/home_ui/vendor_profile_screen.dart';
+import 'package:marketplace_app/features/vendor_product/ui/vendor_products_screen.dart';
+import 'package:marketplace_app/features/vendor_orders/vendor_orders_screen.dart';
 import '../cubit/vendor_cubit.dart';
-import '../../vendor_product/ui/vendor_products_screen.dart';
-import '../../vendor_orders/vendor_orders_screen.dart';
 
 class VendorHome extends StatefulWidget {
   const VendorHome({super.key});
@@ -37,7 +37,6 @@ class _VendorHomeState extends State<VendorHome> {
         if (state is VendorLoaded) {
           final user = state.user;
           final stats = state.stats;
-
           final List<Widget> pages = [
             DashboardView(userName: user.name, stats: stats),
             const VendorProductsScreen(),
@@ -48,13 +47,18 @@ class _VendorHomeState extends State<VendorHome> {
           return Scaffold(
             backgroundColor: const Color(0xff101622),
             body: IndexedStack(index: _currentIndex, children: pages),
+
             floatingActionButton: FloatingActionButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (c) => BlocProvider(
-                      create: (context) => AddProductCubit(ProductService(), CloudinaryService(),CategoryService()),
+                      create: (context) => AddProductCubit(
+                        ProductService(),
+                        CloudinaryService(),
+                        CategoryService(),
+                      ),
                       child: const AddProductScreen(),
                     ),
                   ),
@@ -65,6 +69,7 @@ class _VendorHomeState extends State<VendorHome> {
               child: const Icon(Icons.add, size: 35, color: Colors.white),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
             bottomNavigationBar: BottomAppBar(
               shape: const CircularNotchedRectangle(),
               notchMargin: 8.0,
@@ -89,6 +94,11 @@ class _VendorHomeState extends State<VendorHome> {
             ),
           );
         }
+
+        if (state is VendorError) {
+          return Scaffold(body: Center(child: Text(state.message, style: const TextStyle(color: Colors.white))));
+        }
+
         return const SizedBox();
       },
     );
@@ -124,10 +134,6 @@ class DashboardView extends StatelessWidget {
               ],
             ),
           ],
-        ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(color: Color(0xff1B2535), thickness: 2),
         ),
       ),
       body: SingleChildScrollView(
@@ -167,7 +173,7 @@ class DashboardView extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            _buildSectionHeader(context, "Performance Overview"),
+            Text("Performance Overview", style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
             CustomStatChartCard(
               title: "Inventory Growth",
@@ -186,21 +192,7 @@ class DashboardView extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
-        GestureDetector(
-          onTap: () {},
-          child: Text("Details", style: GoogleFonts.poppins(color: const Color(0xff135EF3), fontWeight: FontWeight.w600)),
-        ),
-      ],
-    );
-  }
 }
-
 class StatCard extends StatelessWidget {
   final String title, value;
   final IconData icon;
@@ -215,9 +207,9 @@ class StatCard extends StatelessWidget {
     Color trendColor = isPos ? const Color(0xff10b981) : Colors.redAccent;
 
     return Card(
-      elevation: 0.5,
+      elevation: 0,
       color: const Color(0xff101D36),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -227,20 +219,20 @@ class StatCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: const TextStyle(fontSize: 12, color: Color(0xff9cabc1))),
-                Icon(icon, size: 14, color: const Color(0xff135EF3)),
+                Text(title, style: const TextStyle(fontSize: 11, color: Color(0xff9cabc1))),
+                Icon(icon, size: 12, color: const Color(0xff135EF3)),
               ],
             ),
             const SizedBox(height: 4),
             FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(value, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 22, color: Colors.white)),
+              child: Text(value, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 20, color: Colors.white)),
             ),
             const SizedBox(height: 4),
             Row(
               children: [
                 Icon(isPos ? FontAwesomeIcons.arrowTrendUp : FontAwesomeIcons.arrowTrendDown, color: trendColor, size: 10),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 Text("${isPos ? '+' : ''}${percent.toStringAsFixed(1)}%", style: TextStyle(color: trendColor, fontWeight: FontWeight.w500, fontSize: 10)),
               ],
             ),
@@ -251,25 +243,15 @@ class StatCard extends StatelessWidget {
   }
 }
 
+
 class CustomStatChartCard extends StatelessWidget {
   final String title, amount;
   final List<FlSpot> spots;
 
   const CustomStatChartCard({super.key, required this.title, required this.amount, required this.spots});
 
-  String _calculateGrowth() {
-    if (spots.length < 2) return "0.0%";
-    double last = spots.last.y;
-    double prev = spots[spots.length - 2].y;
-    double diff = (prev > 0) ? ((last - prev) / prev) * 100 : (last > 0 ? 100.0 : 0.0);
-    return "${diff >= 0 ? '+' : ''}${diff.toStringAsFixed(1)}%";
-  }
-
   @override
   Widget build(BuildContext context) {
-    String growth = _calculateGrowth();
-    bool isPos = !growth.contains('-');
-
     return Card(
       color: const Color(0xff101D36),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
@@ -278,46 +260,58 @@ class CustomStatChartCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: GoogleFonts.poppins(color: const Color(0xff768294), fontSize: 15, fontWeight: FontWeight.w500)),
+            Text(title, style: GoogleFonts.poppins(color: const Color(0xff768294), fontSize: 14)),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(amount, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 26, color: Colors.white)),
-                const SizedBox(width: 12),
-                Text("$growth Today", style: TextStyle(color: isPos ? const Color(0xff10b981) : Colors.redAccent, fontWeight: FontWeight.w500)),
-              ],
-            ),
+            Text(amount, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 24, color: Colors.white)),
             const SizedBox(height: 20),
             SizedBox(
-              height: 140,
-              child: LineChart(LineChartData(
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (val, meta) {
-                        const days = ['SAT', 'SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI'];
-                        return (val >= 0 && val < 7) ? Text(days[val.toInt()], style: const TextStyle(color: Colors.white30, fontSize: 10)) : const SizedBox();
-                      },
+              height: 150,
+              child: LineChart(
+                LineChartData(
+                  lineTouchData: LineTouchData(
+                    handleBuiltInTouches: true,
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipColor: (spot) => const Color(0xff1A2535),
+                      getTooltipItems: (touchedSpots) => touchedSpots.map((s) => LineTooltipItem(
+                        s.y.toStringAsFixed(1),
+                        const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      )).toList(),
                     ),
                   ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: const Color(0xff1255db),
-                    barWidth: 3,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: true, color: const Color(0xff1255db).withValues(alpha: 0.15)),
+                  gridData: const FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
+                  minX: 0, maxX: 6, minY: 0,
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (val, meta) {
+                          const days = ['SAT', 'SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI'];
+                          return (val >= 0 && val < 7)
+                              ? Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(days[val.toInt()], style: const TextStyle(color: Colors.white30, fontSize: 10)),
+                          )
+                              : const SizedBox();
+                        },
+                      ),
+                    ),
                   ),
-                ],
-              )),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: false,
+                      color: const Color(0xff1255db),
+                      barWidth: 3,
+                      dotData: const FlDotData(show: true),
+                      belowBarData: BarAreaData(show: true, color: const Color(0xff1255db).withOpacity(0.1)),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

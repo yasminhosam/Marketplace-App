@@ -38,7 +38,14 @@ class VendorProductsCubit extends Cubit<VendorProductsState>{
       emit(VendorProductsError("Failed to load data: $e"));
     }
   }
-
+  Future<void> deleteProduct(String productId) async {
+    try {
+      await _productService.deleteProduct(productId);
+      fetchVendorProducts();
+    } catch (e) {
+      emit(VendorProductsError(e.toString()));
+    }
+  }
   @override
   Future<void> close() {
     _productsSubscription?.cancel();

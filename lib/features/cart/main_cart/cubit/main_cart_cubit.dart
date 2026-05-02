@@ -105,11 +105,8 @@ class CartCubit extends Cubit<CartState> {
       emit(CartLoading());
       final batch = FirebaseFirestore.instance.batch();
 
-      // 1. Generate a unique ID for the order
       final String orderId = FirebaseFirestore.instance.collection('orders').doc().id;
-      final String orderDate = DateTime.now().toIso8601String(); // Same format as your image
-
-      // Group items by vendor to handle multiple vendors in one checkout
+      final String orderDate = DateTime.now().toIso8601String();
       Map<String, List<CartItemModel>> groupedItems = {};
       for (var item in _items) {
         groupedItems.putIfAbsent(item.vendorId, () => []).add(item);
@@ -119,7 +116,6 @@ class CartCubit extends Cubit<CartState> {
         final vendorItems = groupedItems[vendorId]!;
         double vendorTotal = vendorItems.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity));
 
-        // A. Path for the Vendor: vendor_orders -> vendorId -> orders -> orderId
         final vOrderRef = FirebaseFirestore.instance
             .collection('vendor_orders')
             .doc(vendorId)
@@ -132,12 +128,11 @@ class CartCubit extends Cubit<CartState> {
           'clientName': clientName,
           'items': vendorItems.map((e) => e.toMap()).toList(),
           'totalAmount': vendorTotal,
-          'status': 'processing', // Matches your image
+          'status': 'processing',
           'orderDate': orderDate,
         });
       }
 
-      // B. Path for the Client: client_orders -> clientId -> orders -> orderId
       final cOrderRef = FirebaseFirestore.instance
           .collection('client_orders')
           .doc(clientId)
@@ -152,7 +147,6 @@ class CartCubit extends Cubit<CartState> {
         'orderDate': orderDate,
       });
 
-      // C. General Path (The one in your image): orders -> orderId
       final gOrderRef = FirebaseFirestore.instance.collection('orders').doc(orderId);
       batch.set(gOrderRef, {
         'clientId': clientId,
@@ -161,10 +155,8 @@ class CartCubit extends Cubit<CartState> {
         'totalAmount': _items.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity)) + 25,
         'status': 'processing',
         'orderDate': orderDate,
-        'vendorId': _items.first.vendorId, // As shown in your image
+        'vendorId': _items.first.vendorId,
       });
-
-      // D. Clean up: Stock update & Delete from Cart
       for (var item in _items) {
         batch.update(FirebaseFirestore.instance.collection('products').doc(item.productId),
             {'quantity': FieldValue.increment(-item.selectedQuantity)});

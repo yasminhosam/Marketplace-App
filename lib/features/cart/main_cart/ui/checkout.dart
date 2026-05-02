@@ -24,9 +24,6 @@ class Checkout extends StatelessWidget {
     return BlocListener<CartCubit, CartState>(
       listener: (context, state) {
         if (state is CartLoaded && state.items.isEmpty) {
-          // If items are empty and we just had items, it means checkout was successful
-          // However, simpler is to just navigate when the button is pressed and successful.
-          // For now, I will keep it simple as requested.
         }
       },
       child: BlocBuilder<CartCubit, CartState>(

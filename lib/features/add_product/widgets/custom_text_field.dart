@@ -41,7 +41,6 @@ class CustomTextField extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
 
         errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 12),
-        errorMaxLines: 3,
       ),
     );
   }
