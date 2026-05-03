@@ -16,7 +16,7 @@ import 'package:marketplace_app/features/client_home/ui/client_profile_screen.da
 import 'package:marketplace_app/features/client_home/ui/product_details_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// تأكد من تعديل هذا المسار ليتطابق مع مكان ملف AppRouter عندك
+
 import 'package:marketplace_app/core/routing/app_router.dart';
 
 import '../../cart/main_cart/ui/main_cart_ui.dart';
@@ -68,43 +68,58 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         categoryService: CategoryService(),
       )..loadHomeData(),
       child: PopScope(
-        canPop: _selectedIndex==0,
-          onPopInvoked: (bool didPop){
-          if(didPop) return;
+        canPop: _selectedIndex == 0,
+        onPopInvoked: (bool didPop) {
+          if (didPop) return;
           setState(() {
-            _selectedIndex=0;
+            _selectedIndex = 0;
           });
-          },
+        },
         child: Scaffold(
           backgroundColor: AppColors.background,
-          appBar: _selectedIndex == 0 ? AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            toolbarHeight: 70,
-            title: Row(
-              children: [
-                Expanded(child: _buildSearchBar()),
-                const SizedBox(width: 12),
-                Container(
-                    decoration: const BoxDecoration(
-                      color: AppColors.inputFill,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MainCart(),
+          appBar: _selectedIndex == 0
+              ? AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  toolbarHeight: 70,
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: BlocBuilder<ClientHomeCubit, ClientHomeState>(
+                          builder: (context, state) {
+                            List<ProductModel> products = [];
+                            if (state is ClientHomeLoaded) {
+                              products = state.allProducts;
+                            }
+                            return _buildSearchBar(context, products);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: AppColors.inputFill,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.shopping_cart_outlined,
+                            color: Colors.white,
                           ),
-                        );
-                      },
-                    )
-                ),
-              ],
-            ),
-          ) : null,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MainCart(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : null,
           body: _buildBody(),
           bottomNavigationBar: BottomNavigationBar(
             backgroundColor: const Color(0xFF13161E),
@@ -115,7 +130,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             currentIndex: _selectedIndex,
             onTap: (index) {
               if (index == 1) {
-                Navigator.pushNamed(context, AppRouter.clientFavorite).then((_) {
+                Navigator.pushNamed(context, AppRouter.clientFavorite).then((
+                  _,
+                ) {
                   setState(() {
                     _selectedIndex = 0;
                   });
@@ -165,7 +182,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         return const Center(child: CircularProgressIndicator());
       }
       if (_currentUser == null) {
-        return const Center(child: Text("User not found", style: TextStyle(color: Colors.white)));
+        return const Center(
+          child: Text("User not found", style: TextStyle(color: Colors.white)),
+        );
       }
       return ClientProfileScreen(user: _currentUser!);
     }
@@ -176,7 +195,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           return const Center(child: CircularProgressIndicator());
         } else if (state is ClientHomeError) {
           return Center(
-            child: Text(state.message, style: const TextStyle(color: Colors.red)),
+            child: Text(
+              state.message,
+              style: const TextStyle(color: Colors.red),
+            ),
           );
         } else if (state is ClientHomeLoaded) {
           return Column(
@@ -189,13 +211,15 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
                   "Recent Listings",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
-              Expanded(
-                child: _buildProductGrid(state.displayedProducts),
-              ),
+              Expanded(child: _buildProductGrid(state.displayedProducts)),
             ],
           );
         }
@@ -204,17 +228,27 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context, List<ProductModel> allProducts) {
     return Container(
       height: 48,
       decoration: BoxDecoration(
         color: const Color(0xFF1E212B),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: const TextField(
-        style: TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: "Search Tijara products...",
+      child: TextField(
+        readOnly: true, 
+        onTap: () {
+          showSearch(
+            context: context,
+            delegate: ClientProductSearchDelegate(
+              products: allProducts,
+              currentUser: _currentUser,
+            ),
+          );
+        },
+        style: const TextStyle(color: Colors.white),
+        decoration: const InputDecoration(
+          hintText: "Search products or vendors...",
           hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
           prefixIcon: Icon(Icons.search, color: Colors.grey),
           border: InputBorder.none,
@@ -258,7 +292,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     );
   }
 
-  Widget _buildChip({required String title, required bool isSelected, required VoidCallback onTap}) {
+  Widget _buildChip({
+    required String title,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -293,9 +331,16 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade700),
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 64,
+              color: Colors.grey.shade700,
+            ),
             const SizedBox(height: 16),
-            const Text("No items found in this category.", style: TextStyle(color: Colors.grey)),
+            const Text(
+              "No items found in this category.",
+              style: TextStyle(color: Colors.grey),
+            ),
           ],
         ),
       );
@@ -324,10 +369,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProductDetailsScreen(
-                product: product,
-                user: _currentUser!,
-              ),
+              builder: (context) =>
+                  ProductDetailsScreen(product: product, user: _currentUser!),
             ),
           );
         }
@@ -352,27 +395,32 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 fit: StackFit.expand,
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
                     child: product.imageUrl.isNotEmpty
                         ? Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
-                    )
+                            product.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildPlaceholderImage(),
+                          )
                         : _buildPlaceholderImage(),
                   ),
                   Positioned(
                     top: 8,
                     right: 8,
-
                     child: BlocBuilder<FavoritesCubit, FavoritesState>(
                       builder: (context, state) {
-                        final isFavorite = context.read<FavoritesCubit>().isProductFavorite(product.id);
+                        final isFavorite = context
+                            .read<FavoritesCubit>()
+                            .isProductFavorite(product.id);
 
                         return GestureDetector(
                           onTap: () {
-
-                            context.read<FavoritesCubit>().toggleFavorite(product);
+                            context.read<FavoritesCubit>().toggleFavorite(
+                              product,
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.all(6),
@@ -381,8 +429,12 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: isFavorite ? Colors.redAccent : Colors.white,
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite
+                                  ? Colors.redAccent
+                                  : Colors.white,
                               size: 18,
                             ),
                           ),
@@ -423,13 +475,16 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                       if (product.quantity == 1)
                         const Text(
                           "1 left",
-                          style: TextStyle(color: Colors.orangeAccent, fontSize: 10),
+                          style: TextStyle(
+                            color: Colors.orangeAccent,
+                            fontSize: 10,
+                          ),
                         ),
                     ],
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -440,7 +495,169 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     return Container(
       color: const Color(0xFF2C2C3E),
       child: Center(
-        child: Icon(Icons.image_outlined, color: Colors.grey.shade600, size: 40),
+        child: Icon(
+          Icons.image_outlined,
+          color: Colors.grey.shade600,
+          size: 40,
+        ),
+      ),
+    );
+  }
+}
+
+
+class ClientProductSearchDelegate extends SearchDelegate {
+  final List<ProductModel> products;
+  final UserModel? currentUser;
+
+  ClientProductSearchDelegate({
+    required this.products,
+    required this.currentUser,
+  });
+
+  @override
+  String get searchFieldLabel => "Search products or vendors...";
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    return ThemeData(
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF13161E), // نفس لون الـ AppBar في التطبيق
+        iconTheme: IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        hintStyle: TextStyle(color: Colors.grey),
+        border: InputBorder.none,
+      ),
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(color: Colors.white, fontSize: 16),
+      ),
+    );
+  }
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.clear, color: Colors.white),
+          onPressed: () => query = '',
+        ),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back, color: Colors.white),
+      onPressed: () => close(context, null),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) => _buildSearchResults();
+
+  @override
+  Widget buildSuggestions(BuildContext context) => _buildSearchResults();
+
+  Widget _buildSearchResults() {
+    if (query.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: const Center(
+          child: Text(
+            "Type to search by product or vendor...",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    final queryLower = query.toLowerCase();
+    final results = products.where((p) {
+      final titleMatch = p.name.toLowerCase().contains(queryLower);
+      final vendorMatch = p.storeName.toLowerCase().contains(queryLower);
+      return titleMatch || vendorMatch;
+    }).toList();
+
+    if (results.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: const Center(
+          child: Text("No results found", style: TextStyle(color: Colors.grey)),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: results.length,
+        itemBuilder: (context, index) {
+          final product = results[index];
+          return Card(
+            color: const Color(0xFF1E212B),
+            margin: const EdgeInsets.only(bottom: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(12),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: product.imageUrl.isNotEmpty
+                    ? Image.network(
+                        product.imageUrl,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        width: 50,
+                        height: 50,
+                        color: const Color(0xFF2C2C3E),
+                        child: const Icon(
+                          Icons.image_outlined,
+                          color: Colors.grey,
+                        ),
+                      ),
+              ),
+              title: Text(
+                product.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                "Vendor: ${product.storeName}",
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              trailing: Text(
+                "\$${product.price.toStringAsFixed(2)}",
+                style: const TextStyle(
+                  color: Color(0xFF1A65FF),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                if (currentUser != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailsScreen(
+                        product: product,
+                        user: currentUser!,
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          );
+        },
       ),
     );
   }
