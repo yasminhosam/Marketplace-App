@@ -16,7 +16,6 @@ import 'package:marketplace_app/features/client_home/ui/client_profile_screen.da
 import 'package:marketplace_app/features/client_home/ui/product_details_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 import 'package:marketplace_app/core/routing/app_router.dart';
 
 import '../../cart/main_cart/ui/main_cart_ui.dart';
@@ -236,7 +235,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         borderRadius: BorderRadius.circular(24),
       ),
       child: TextField(
-        readOnly: true, 
+        readOnly: true,
         onTap: () {
           showSearch(
             context: context,
@@ -504,7 +503,6 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     );
   }
 }
-
 
 class ClientProductSearchDelegate extends SearchDelegate {
   final List<ProductModel> products;
