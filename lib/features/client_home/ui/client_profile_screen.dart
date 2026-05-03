@@ -100,21 +100,23 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
           ElevatedButton(
             onPressed: () async {
               try {
-                final firestore =FirebaseFirestore.instance;
-                final newValue=controller.text.trim();
-                if(dbKey == 'storeName'){
-                  final batch =firestore.batch();
-                  final userRef=firestore.collection('users')
-                  .doc(widget.user.uid);
-                  batch.update(userRef, {dbKey:newValue});
-                  final productsQuery =await firestore
-                  .collection('products')
-                  .where('vendorId',isEqualTo: widget.user.uid).get();
-                  for(var doc in productsQuery.docs){
-                    batch.update(doc.reference, {'storeName':newValue});
+                final firestore = FirebaseFirestore.instance;
+                final newValue = controller.text.trim();
+                if (dbKey == 'storeName') {
+                  final batch = firestore.batch();
+                  final userRef = firestore
+                      .collection('users')
+                      .doc(widget.user.uid);
+                  batch.update(userRef, {dbKey: newValue});
+                  final productsQuery = await firestore
+                      .collection('products')
+                      .where('vendorId', isEqualTo: widget.user.uid)
+                      .get();
+                  for (var doc in productsQuery.docs) {
+                    batch.update(doc.reference, {'storeName': newValue});
                   }
                   await batch.commit();
-                } else{
+                } else {
                   await firestore
                       .collection('users')
                       .doc(widget.user.uid)
@@ -159,10 +161,14 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
         automaticallyImplyLeading: false,
       ),
       body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance.collection('users').doc(widget.user.uid).snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.user.uid)
+            .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          
+          if (!snapshot.hasData)
+            return const Center(child: CircularProgressIndicator());
+
           final userData = snapshot.data!.data() as Map<String, dynamic>;
           final user = UserModel.fromMap(userData);
 
@@ -289,12 +295,18 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xff101D36),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                      border: Border.all(
+                        color: Colors.redAccent.withOpacity(0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.logout, color: Colors.redAccent, size: 20),
+                        const Icon(
+                          Icons.logout,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           "Logout",
@@ -312,7 +324,7 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
               ],
             ),
           );
-        }
+        },
       ),
     );
   }

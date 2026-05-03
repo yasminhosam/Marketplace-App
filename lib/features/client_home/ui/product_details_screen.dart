@@ -30,9 +30,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         _quantity++;
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Maximum stock reached")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Maximum stock reached")));
     }
   }
 
@@ -46,14 +46,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   Future<void> _addToCart() async {
     if (widget.product.quantity == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Product is out of stock")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Product is out of stock")));
       return;
     }
     if (_quantity > widget.product.quantity) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Only ${widget.product.quantity} items available")),
+        SnackBar(
+          content: Text("Only ${widget.product.quantity} items available"),
+        ),
       );
       return;
     }
@@ -71,9 +73,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -82,14 +84,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   Future<void> _orderNow() async {
     if (widget.product.quantity == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Product is out of stock")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Product is out of stock")));
       return;
     }
     if (_quantity > widget.product.quantity) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Only ${widget.product.quantity} items available")),
+        SnackBar(
+          content: Text("Only ${widget.product.quantity} items available"),
+        ),
       );
       return;
     }
@@ -108,9 +112,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -142,14 +146,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: widget.product.imageUrl.isNotEmpty
-                  ? Image.network(
-                      widget.product.imageUrl,
-                      fit: BoxFit.cover,
-                    )
+                  ? Image.network(widget.product.imageUrl, fit: BoxFit.cover)
                   : Container(
                       color: const Color(0xFF2C2C3E),
-                      child: const Icon(Icons.image_outlined,
-                          color: Colors.white, size: 100),
+                      child: const Icon(
+                        Icons.image_outlined,
+                        color: Colors.white,
+                        size: 100,
+                      ),
                     ),
             ),
           ),
@@ -184,7 +188,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    isOutOfStock ? "Out of Stock" : "In Stock: ${widget.product.quantity}",
+                    isOutOfStock
+                        ? "Out of Stock"
+                        : "In Stock: ${widget.product.quantity}",
                     style: GoogleFonts.poppins(
                       color: isOutOfStock ? Colors.redAccent : Colors.grey,
                       fontSize: 14,
@@ -199,7 +205,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           color: const Color(0xFF1E212B),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.storefront, color: Color(0xFF1A65FF), size: 20),
+                        child: const Icon(
+                          Icons.storefront,
+                          color: Color(0xFF1A65FF),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -232,48 +242,57 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  if (!isOutOfStock) Row(
-                    children: [
-                      Text(
-                        "Quantity",
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                  if (!isOutOfStock)
+                    Row(
+                      children: [
+                        Text(
+                          "Quantity",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E212B),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: _decrementQuantity,
-                              icon: const Icon(Icons.remove, color: Colors.white),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Text(
-                                "$_quantity",
-                                style: GoogleFonts.poppins(
+                        const Spacer(),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E212B),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: _decrementQuantity,
+                                icon: const Icon(
+                                  Icons.remove,
                                   color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
-                            IconButton(
-                              onPressed: _incrementQuantity,
-                              icon: const Icon(Icons.add, color: Colors.white),
-                            ),
-                          ],
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                child: Text(
+                                  "$_quantity",
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _incrementQuantity,
+                                icon: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -291,7 +310,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           children: [
             Expanded(
               child: ElevatedButton(
-                onPressed: (_isLoading || isOutOfStock || isQuantityExceeded) ? null : _addToCart,
+                onPressed: (_isLoading || isOutOfStock || isQuantityExceeded)
+                    ? null
+                    : _addToCart,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E212B),
                   foregroundColor: Colors.white,
@@ -299,7 +320,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   disabledBackgroundColor: Colors.grey.withOpacity(0.1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: (isOutOfStock || isQuantityExceeded) ? Colors.grey : const Color(0xFF1A65FF)),
+                    side: BorderSide(
+                      color: (isOutOfStock || isQuantityExceeded)
+                          ? Colors.grey
+                          : const Color(0xFF1A65FF),
+                    ),
                   ),
                 ),
                 child: _isLoading
@@ -320,9 +345,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton(
-                onPressed: (_isLoading || isOutOfStock || isQuantityExceeded) ? null : _orderNow,
+                onPressed: (_isLoading || isOutOfStock || isQuantityExceeded)
+                    ? null
+                    : _orderNow,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: (isOutOfStock || isQuantityExceeded) ? Colors.grey : const Color(0xFF1A65FF),
+                  backgroundColor: (isOutOfStock || isQuantityExceeded)
+                      ? Colors.grey
+                      : const Color(0xFF1A65FF),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   disabledBackgroundColor: Colors.grey.withOpacity(0.1),
@@ -335,7 +364,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Text(
                         "Order Now",
