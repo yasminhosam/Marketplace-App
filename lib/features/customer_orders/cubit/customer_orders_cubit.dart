@@ -20,11 +20,9 @@ class CustomerOrdersCubit
     _ordersSub?.cancel();
     _ordersSub = FirebaseFirestore
         .instance
-        .collection('orders')
-        .where(
-          'clientId',
-          isEqualTo: clientId,
-        )
+        .collection('client_orders')
+        .doc(clientId)
+    .collection('orders')
         .snapshots()
         .listen(
           (snapshot) {
