@@ -63,27 +63,27 @@ class OrderCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: () async {
-                      try {
-                        await context.read<VendorOrdersCubit>().deleteOrder(order.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Order deleted successfully")),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(e.toString())),
-                          );
-                        }
-                      }
-                    },
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                  ),
+                  // IconButton(
+                  //   onPressed: () async {
+                  //     try {
+                  //       await context.read<VendorOrdersCubit>().deleteOrder(order.id);
+                  //       if (context.mounted) {
+                  //         ScaffoldMessenger.of(context).showSnackBar(
+                  //           const SnackBar(content: Text("Order deleted successfully")),
+                  //         );
+                  //       }
+                  //     } catch (e) {
+                  //       if (context.mounted) {
+                  //         ScaffoldMessenger.of(context).showSnackBar(
+                  //           SnackBar(content: Text(e.toString())),
+                  //         );
+                  //       }
+                  //     }
+                  //   },
+                  //   icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                  //   constraints: const BoxConstraints(),
+                  //   padding: EdgeInsets.zero,
+                  // ),
                 ],
               ),
             ],
@@ -160,12 +160,12 @@ class OrderCard extends StatelessWidget {
                 },
                 child: Row(
                   children: const [
-                    Text(
-                      'View Details',
-                      style: TextStyle(color: Color(0xFF8B9CB6), fontSize: 13),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward, color: Color(0xFF8B9CB6), size: 16),
+                    // Text(
+                    //   'View Details',
+                    //   style: TextStyle(color: Color(0xFF8B9CB6), fontSize: 13),
+                    // ),
+                    // SizedBox(width: 4),
+                    // Icon(Icons.arrow_forward, color: Color(0xFF8B9CB6), size: 16),
                   ],
                 ),
               ),

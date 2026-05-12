@@ -15,8 +15,9 @@ class VendorOrdersCubit extends Cubit<VendorOrdersState> {
 
     _ordersSub?.cancel();
     _ordersSub = FirebaseFirestore.instance
+        .collection('vendor_orders')
+        .doc(vendorId)
         .collection('orders')
-        .where('vendorId', isEqualTo: vendorId)
         .snapshots()
         .listen((snapshot) {
       final orders = snapshot.docs.map((doc) {
