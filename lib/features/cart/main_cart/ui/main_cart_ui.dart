@@ -14,13 +14,15 @@ class MainCart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return const Scaffold(body: Center(child: Text("Not logged in")));
+    if (user == null) {
+      return const Scaffold(body: Center(child: Text("Not logged in")));
+    }
 
     return BlocProvider(
       create: (_) => CartCubit()..fetchCart(user.uid),
       child: Scaffold(
         backgroundColor: const Color(0xFF101622),
-        appBar:AppBar(
+        appBar: AppBar(
           backgroundColor: const Color(0xFF101622),
           elevation: 0,
           centerTitle: true,
@@ -48,9 +50,27 @@ class MainCart extends StatelessWidget {
             ),
           ),
         ),
-        body: BlocBuilder<CartCubit, CartState>(
+
+
+        body: BlocConsumer<CartCubit, CartState>(
+          //  Add the listener for SnackBars and side-effects
+          listener: (context, state) {
+            if (state is CartError) {
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.redAccent,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
           builder: (context, state) {
-            if (state is CartLoading) return const Center(child: CircularProgressIndicator());
+            if (state is CartLoading) {
+              return const Center(child: CircularProgressIndicator(color: Color(0xff135EF3)));
+            }
+
             if (state is CartLoaded) {
               if (state.items.isEmpty) return const EmptyCart();
               return Column(
@@ -65,7 +85,9 @@ class MainCart extends StatelessWidget {
                 ],
               );
             }
-            return const EmptyCart();
+
+
+            return const Center(child: CircularProgressIndicator(color: Color(0xff135EF3)));
           },
         ),
       ),

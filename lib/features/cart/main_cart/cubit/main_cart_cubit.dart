@@ -99,77 +99,115 @@ class CartCubit extends Cubit<CartState> {
     }
   }
 
- Future<void> checkout({required String clientId, required String clientName}) async {
+  Future<void> checkout({required String clientId, required String clientName}) async {
     if (_items.isEmpty) return;
     try {
       emit(CartLoading());
-      final batch = FirebaseFirestore.instance.batch();
 
       final String orderId = FirebaseFirestore.instance.collection('orders').doc().id;
       final String orderDate = DateTime.now().toIso8601String();
-      Map<String, List<CartItemModel>> groupedItems = {};
-      for (var item in _items) {
-        groupedItems.putIfAbsent(item.vendorId, () => []).add(item);
-      }
 
-      for (var vendorId in groupedItems.keys) {
-        final vendorItems = groupedItems[vendorId]!;
-        double vendorTotal = vendorItems.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity));
+      // Use a Transaction to safely check stock before any write operations
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
 
-        final vOrderRef = FirebaseFirestore.instance
-            .collection('vendor_orders')
-            .doc(vendorId)
+        Map<String, DocumentSnapshot> productSnapshots = {};
+        for (var item in _items) {
+          final productRef = FirebaseFirestore.instance.collection('products').doc(item.productId);
+          productSnapshots[item.productId] = await transaction.get(productRef);
+        }
+        Map<String, int> actualStocks = {};
+        for (var item in _items) {
+          final snapshot = productSnapshots[item.productId]!;
+          if (!snapshot.exists) {
+            throw Exception("Sorry, the product '${item.name}' is no longer available.");
+          }
+          final int currentStock = (snapshot.data() as Map<String, dynamic>?)?['quantity'] ?? 0;
+          if (currentStock < item.selectedQuantity) {
+            throw Exception("Sorry, '${item.name}' is out of stock! Only $currentStock available.");
+          }
+          // Save the actual quantity to use for strict deduction later
+          actualStocks[item.productId] = currentStock;
+        }
+
+
+        // Group items by vendor to split orders properly
+        Map<String, List<CartItemModel>> groupedItems = {};
+        for (var item in _items) {
+          groupedItems.putIfAbsent(item.vendorId, () => []).add(item);
+        }
+
+        for (var vendorId in groupedItems.keys) {
+          final vendorItems = groupedItems[vendorId]!;
+          double vendorTotal = vendorItems.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity));
+
+          final vOrderRef = FirebaseFirestore.instance
+              .collection('vendor_orders')
+              .doc(vendorId)
+              .collection('orders')
+              .doc(orderId);
+
+          transaction.set(vOrderRef, {
+            'orderId': orderId,
+            'clientId': clientId,
+            'clientName': clientName,
+            'items': vendorItems.map((e) => e.toMap()).toList(),
+            'totalAmount': vendorTotal,
+            'status': 'processing',
+            'orderDate': orderDate,
+          });
+        }
+
+        final double overallTotal = _items.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity)) + 25;
+        final allItemsMapped = _items.map((e) => e.toMap()).toList();
+
+        final cOrderRef = FirebaseFirestore.instance
+            .collection('client_orders')
+            .doc(clientId)
             .collection('orders')
             .doc(orderId);
 
-        batch.set(vOrderRef, {
+        transaction.set(cOrderRef, {
           'orderId': orderId,
-          'clientId': clientId,
-          'clientName': clientName,
-          'items': vendorItems.map((e) => e.toMap()).toList(),
-          'totalAmount': vendorTotal,
+          'items': allItemsMapped,
+          'totalAmount': overallTotal,
           'status': 'processing',
           'orderDate': orderDate,
         });
-      }
 
-      final cOrderRef = FirebaseFirestore.instance
-          .collection('client_orders')
-          .doc(clientId)
-          .collection('orders')
-          .doc(orderId);
+        final gOrderRef = FirebaseFirestore.instance.collection('orders').doc(orderId);
+        transaction.set(gOrderRef, {
+          'orderId': orderId,
+          'clientId': clientId,
+          'clientName': clientName,
+          'items': allItemsMapped,
+          'totalAmount': overallTotal,
+          'status': 'processing',
+          'orderDate': orderDate,
+        });
+        for (var item in _items) {
+          // Deduct stock strictly based on the live number we just read
+          final productRef = FirebaseFirestore.instance.collection('products').doc(item.productId);
+          transaction.update(productRef, {
+            'quantity': actualStocks[item.productId]! - item.selectedQuantity
+          });
 
-      batch.set(cOrderRef, {
-        'orderId': orderId,
-        'items': _items.map((e) => e.toMap()).toList(),
-        'totalAmount': _items.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity)) + 25,
-        'status': 'processing',
-        'orderDate': orderDate,
+          // Remove the ordered item from the cart collection
+          final cartItemRef = FirebaseFirestore.instance
+              .collection('carts')
+              .doc(clientId)
+              .collection('items')
+              .doc(item.docId!);
+          transaction.delete(cartItemRef);
+        }
       });
 
-      final gOrderRef = FirebaseFirestore.instance.collection('orders').doc(orderId);
-      batch.set(gOrderRef, {
-        'clientId': clientId,
-        'clientName': clientName,
-        'items': _items.map((e) => e.toMap()).toList(),
-        'totalAmount': _items.fold(0.0, (s, e) => s + (e.price * e.selectedQuantity)) + 25,
-        'status': 'processing',
-        'orderDate': orderDate,
-        'vendorId': _items.first.vendorId,
-      });
-      for (var item in _items) {
-        batch.update(FirebaseFirestore.instance.collection('products').doc(item.productId),
-            {'quantity': FieldValue.increment(-item.selectedQuantity)});
-
-        batch.delete(FirebaseFirestore.instance.collection('carts').doc(clientId).collection('items').doc(item.docId!));
-      }
-
-      await batch.commit();
+      // If the Transaction completes without throwing an exception
       _items.clear();
       emit(CartLoaded([]));
 
     } catch (e) {
-      emit(CartError("Checkout failed: $e"));
+      emit(CartError(e.toString().replaceAll("Exception: ", "")));
+
       fetchCart(clientId);
     }
   }

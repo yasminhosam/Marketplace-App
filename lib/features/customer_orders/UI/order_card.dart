@@ -12,7 +12,7 @@ import 'package:marketplace_app/core/services/auth_service.dart';
 import 'package:marketplace_app/features/client_home/ui/product_details_screen.dart';
 
 class OrderCard extends StatelessWidget {
-  final OrderModel order; // غيرناها للموديل الحقيقي
+  final OrderModel order;
 
   const OrderCard({super.key, required this.order});
 
@@ -49,7 +49,7 @@ class OrderCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '#${order.id.substring(0, 6)}', // بناخد أول 6 حروف من الـ ID بتاع الفايربيز
+                '#${order.id.substring(0, 6)}',
                 style: const TextStyle(
                   color: Color(0xFF4A90E2),
                   fontWeight: FontWeight.bold,
@@ -135,7 +135,7 @@ class OrderCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                dateString, // التاريخ بعد التحويل
+                dateString,
                 style: const TextStyle(color: Color(0xFF8B9CB6), fontSize: 13),
               ),
             ],
@@ -148,7 +148,7 @@ class OrderCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '\$${order.totalAmount.toStringAsFixed(2)}', // السعر من الموديل الحقيقي
+                '\$${order.totalAmount.toStringAsFixed(2)}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

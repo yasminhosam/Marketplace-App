@@ -45,7 +45,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Future<void> _addToCart() async {
-    if (widget.product.quantity == 0) {
+    if (_isLoading) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    if (widget.product.quantity <= 0) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Product is out of stock")));
@@ -67,12 +69,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         quantity: _quantity,
       );
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Added to cart successfully!")),
         );
       }
     } catch (e) {
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(e.toString())));
@@ -83,7 +87,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Future<void> _orderNow() async {
-    if (widget.product.quantity == 0) {
+    if (_isLoading) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    if (widget.product.quantity <= 0) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Product is out of stock")));
@@ -105,6 +111,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         quantity: _quantity,
       );
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Order placed successfully!")),
         );
@@ -112,6 +119,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       }
     } catch (e) {
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(e.toString())));
@@ -123,7 +131,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isOutOfStock = widget.product.quantity == 0;
+    final bool isOutOfStock = widget.product.quantity <= 0;
     final bool isQuantityExceeded = _quantity > widget.product.quantity;
 
     return Scaffold(

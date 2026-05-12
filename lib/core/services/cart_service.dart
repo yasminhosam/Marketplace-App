@@ -18,28 +18,46 @@ class CartService {
           .collection('items')
           .doc(product.id);
 
-      final doc = await cartItemRef.get();
+      final productRef = _firestore.collection('products').doc(product.id);
 
-      if (doc.exists) {
-        // Update quantity if already in cart
-        await cartItemRef.update({
-          'selectedQuantity': FieldValue.increment(quantity),
-        });
-      } else {
-        // Add new item
-        final cartItem = {
-          'productId': product.id,
-          'selectedQuantity': quantity,
-          // We don't store full product info here as per CartCubit's fetchCart logic
-          // which fetches it from products collection.
-          // Wait, CartCubit.fetchCart expects:
-          // 'productId'
-          // and then it fetches the rest.
-        };
-        await cartItemRef.set(cartItem);
-      }
+      // Use a transaction to safely check live stock and current cart contents
+
+      await _firestore.runTransaction((transaction) async {
+
+        final productSnapshot = await transaction.get(productRef);
+        if (!productSnapshot.exists) {
+          throw Exception("Product no longer exists.");
+        }
+        final int actualStock = productSnapshot.data()?['quantity'] ?? 0;
+
+        final cartSnapshot = await transaction.get(cartItemRef);
+        int currentCartQuantity = 0;
+
+        if (cartSnapshot.exists) {
+          currentCartQuantity = cartSnapshot.data()?['selectedQuantity'] ?? 0;
+        }
+
+        final int newTotalQuantity = currentCartQuantity + quantity;
+
+        if (newTotalQuantity > actualStock) {
+          throw Exception(
+              "Cannot add $quantity. You already have $currentCartQuantity in your cart, and only $actualStock are available."
+          );
+        }
+
+        if (cartSnapshot.exists) {
+          transaction.update(cartItemRef, {
+            'selectedQuantity': newTotalQuantity,
+          });
+        } else {
+          transaction.set(cartItemRef, {
+            'productId': product.id,
+            'selectedQuantity': newTotalQuantity,
+          });
+        }
+      });
     } catch (e) {
-      throw Exception("Failed to add to cart: $e");
+      throw Exception(e.toString().replaceAll("Exception: ", ""));
     }
   }
 
@@ -49,63 +67,60 @@ class CartService {
     required int quantity,
   }) async {
     try {
-      final batch = _firestore.batch();
+      final productRef = _firestore.collection('products').doc(product.id);
+      final vendorRef = _firestore.collection('users').doc(product.vendorId);
+
       final String orderId = _firestore.collection('orders').doc().id;
       final String orderDate = DateTime.now().toIso8601String();
 
-      // Get vendor info
-      final vendorDoc = await _firestore.collection('users').doc(product.vendorId).get();
-      final vendorName = vendorDoc.data()?['name'] ?? 'Unknown Vendor';
+      await _firestore.runTransaction((transaction) async {
+        final productSnapshot = await transaction.get(productRef);
+        if(!productSnapshot.exists){
+          throw Exception("This product is not available anymore");
+        }
+        final int currentStock = productSnapshot.data()?['quantity'] ?? 0;
+        if(currentStock < quantity){
+          throw Exception("Sorry, we're out of stock! Only $currentStock is currently available.");
+        }
+        final vendorSnapshot =await transaction.get(vendorRef);
+        final vendorName = vendorSnapshot.data()?['name'] ?? 'Unknown Vendor' ;
+        final cartItem = CartItemModel(
+          productId: product.id,
+          vendorId: product.vendorId,
+          storeName: vendorName,
+          name: product.name,
+          description: product.description,
+          imageUrl: product.imageUrl,
+          price: product.price,
+          selectedQuantity: quantity,
+        );
+        final totalAmount = (product.price * quantity) + 25;
 
-      final cartItem = CartItemModel(
-        productId: product.id,
-        vendorId: product.vendorId,
-        storeName: vendorName,
-        name: product.name,
-        description: product.description,
-        imageUrl: product.imageUrl,
-        price: product.price,
-        selectedQuantity: quantity,
-      );
+        final orderData = {
+          'orderId': orderId,
+          'clientId': client.uid,
+          'clientName': client.name,
+          'vendorId': product.vendorId,
+          'vendorName': vendorName,
+          'items': [cartItem.toMap()],
+          'totalAmount': totalAmount,
+          'status': 'processing',
+          'orderDate': orderDate,
+        };
 
-      final totalAmount = (product.price * quantity) + 25;
+        final orderRef = _firestore.collection('orders').doc(orderId);
+        final clientOrderRef = _firestore.collection('client_orders').doc(client.uid).collection('orders').doc(orderId);
+        final vendorOrderRef = _firestore.collection('vendor_orders').doc(product.vendorId).collection('orders').doc(orderId);
+        transaction.set(orderRef,orderData);
+        transaction.set(clientOrderRef,orderData);
+        transaction.set(vendorOrderRef,orderData);
+        transaction.update(productRef, {
+          'quantity': currentStock - quantity,
+        });
+      });
 
-      final orderData = {
-        'orderId': orderId,
-        'clientId': client.uid,
-        'clientName': client.name,
-        'vendorId': product.vendorId,
-        'vendorName': vendorName,
-        'items': [cartItem.toMap()],
-        'totalAmount': totalAmount,
-        'status': 'processing',
-        'orderDate': orderDate,
-      };
-
-      // 1. General orders collection
-      batch.set(_firestore.collection('orders').doc(orderId), orderData);
-
-      // 2. Client orders collection
-      batch.set(
-        _firestore.collection('client_orders').doc(client.uid).collection('orders').doc(orderId),
-        orderData,
-      );
-
-      // 3. Vendor orders collection
-      batch.set(
-        _firestore.collection('vendor_orders').doc(product.vendorId).collection('orders').doc(orderId),
-        orderData,
-      );
-
-      // 4. Update stock
-      batch.update(
-        _firestore.collection('products').doc(product.id),
-        {'quantity': FieldValue.increment(-quantity)},
-      );
-
-      await batch.commit();
     } catch (e) {
-      throw Exception("Failed to place order: $e");
+      throw Exception(e.toString().replaceAll("Exception: ", ""));
     }
   }
 
